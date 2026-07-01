@@ -99,25 +99,6 @@ function App() {
     ? brotherRentIncome - brotherExpenses + userTaxShield
     : brotherRentIncome - brotherRent - brotherExpenses + userTaxShield;
 
-  // 5. Chart Data
-  const chartData = [];
-  for (let rent = 0; rent <= 6000; rent += 250) {
-    if (isRental) {
-      chartData.push({
-        rentAmount: rent,
-        dadNetFlow: (rent * 0.5) - (propertyCosts * 0.5),
-        userNetFlow: (rent * 0.25) - (propertyCosts * 0.25) + userTaxShield,
-      });
-    } else {
-      const simTotalRent = rent + brotherRent;
-      chartData.push({
-        rentAmount: rent,
-        dadNetFlow: (simTotalRent * 0.5) - (propertyCosts * 0.5),
-        userNetFlow: (simTotalRent * 0.25) - rent - (propertyCosts * 0.25) + userTaxShield,
-      });
-    }
-  }
-
   // Helper for the monthly interest/principal split display
   const monthlyInterest = totalInterestForYear / 12;
   const monthlyPrincipal = totalPrincipalForYear / 12;
@@ -235,22 +216,6 @@ function App() {
                   <hr />
                   <div className="row total"><span>Net Flow:</span> <span className={brotherNet >= 0 ? "positive" : "negative"}>{formatCurrency(brotherNet)}</span></div>
                 </div>
-              </div>
-            </div>
-            <div className="card chart-card">
-              <h2><PieChartIcon className="icon" /> Cash Flow Sensitivity</h2>
-              <div className="chart-container">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-                    <XAxis dataKey="userRentAmount" stroke="#a0a0a0" tickFormatter={(v) => `$${v}`} />
-                    <YAxis stroke="#a0a0a0" tickFormatter={(v) => `$${v}`} />
-                    <RechartsTooltip formatter={(value) => formatCurrency(value)} labelFormatter={(label) => `Your Rent: ${formatCurrency(label)}`} contentStyle={{ backgroundColor: '#1e1e1e', border: '1px solid #333', borderRadius: '8px' }} />
-                    <Legend />
-                    <Line type="monotone" dataKey="dadNetFlow" name="Dad's Net Flow" stroke="#4ade80" strokeWidth={3} />
-                    <Line type="monotone" dataKey="userNetFlow" name={`Your Net Flow (Yr ${selectedYear})`} stroke="#60a5fa" strokeWidth={3} />
-                  </LineChart>
-                </ResponsiveContainer>
               </div>
             </div>
           </div>
