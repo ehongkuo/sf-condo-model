@@ -21,32 +21,7 @@ function CashFlowTab({
 
   return (
     <div className="tab-fade-in">
-      <div className="card controls-card">
-        <h2 style={{marginBottom: '16px'}}>Adjust Rent Payments</h2>
-
-        {!isRental ? (
-          <div className="sliders-wrapper">
-            <div className="slider-group">
-              <label>Your Rent Contribution</label>
-              <input type="range" min="0" max="5000" step="100" value={userRent} onChange={(e) => setUserRent(Number(e.target.value))} className="slider blue-slider" />
-              <div className="rent-value">{formatCurrency(userRent)}</div>
-            </div>
-            <div className="slider-group">
-              <label>Brother's Rent Contribution</label>
-              <input type="range" min="0" max="5000" step="100" value={brotherRent} onChange={(e) => setBrotherRent(Number(e.target.value))} className="slider purple-slider" />
-              <div className="rent-value">{formatCurrency(brotherRent)}</div>
-            </div>
-          </div>
-        ) : (
-          <div className="sliders-wrapper">
-            <div className="slider-group" style={{width: '100%'}}>
-              <label>Tenant Rent Income</label>
-              <input type="range" min="0" max="8000" step="100" value={tenantRent} onChange={(e) => setTenantRent(Number(e.target.value))} className="slider" style={{background: 'linear-gradient(90deg, #60a5fa, #a855f7)'}} />
-              <div className="rent-value">{formatCurrency(tenantRent)}</div>
-            </div>
-          </div>
-        )}
-
+      <div className="card controls-card" style={{paddingBottom: '16px'}}>
         <div className="split-info">
           <div className="split-item total-pot">Total Rent Pot: {formatCurrency(totalRent)}</div>
         </div>

@@ -213,6 +213,26 @@ function App() {
             <input type="range" min="2" max="10" step="1" value={moveOutYear} onChange={(e) => setMoveOutYear(Number(e.target.value))} className="slider" style={{width: '100%', background: 'linear-gradient(90deg, #4ade80, #f87171)'}} />
             <div className="rent-value" style={{fontSize: '0.9rem'}}>Year {moveOutYear}</div>
           </div>
+          {isRental ? (
+            <div className="slider-group" style={{flex: 1, minWidth: '150px'}}>
+              <label style={{fontSize: '0.8rem'}}>Tenant Rent (Monthly)</label>
+              <input type="range" min="0" max="8000" step="100" value={tenantRent} onChange={(e) => setTenantRent(Number(e.target.value))} className="slider" style={{width: '100%', background: 'linear-gradient(90deg, #60a5fa, #a855f7)'}} />
+              <div className="rent-value" style={{fontSize: '0.9rem'}}>{formatCurrency(tenantRent)}</div>
+            </div>
+          ) : (
+            <>
+              <div className="slider-group" style={{flex: 1, minWidth: '150px'}}>
+                <label style={{fontSize: '0.8rem'}}>Your Rent</label>
+                <input type="range" min="0" max="5000" step="100" value={userRent} onChange={(e) => setUserRent(Number(e.target.value))} className="slider blue-slider" style={{width: '100%'}} />
+                <div className="rent-value" style={{fontSize: '0.9rem'}}>{formatCurrency(userRent)}</div>
+              </div>
+              <div className="slider-group" style={{flex: 1, minWidth: '150px'}}>
+                <label style={{fontSize: '0.8rem'}}>Brother's Rent</label>
+                <input type="range" min="0" max="5000" step="100" value={brotherRent} onChange={(e) => setBrotherRent(Number(e.target.value))} className="slider purple-slider" style={{width: '100%'}} />
+                <div className="rent-value" style={{fontSize: '0.9rem'}}>{formatCurrency(brotherRent)}</div>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
