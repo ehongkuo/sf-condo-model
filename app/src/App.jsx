@@ -117,18 +117,41 @@ function App() {
 
       <div className="sticky-control card" style={{
         position: 'sticky', top: '20px', zIndex: 100, marginBottom: '24px',
-        padding: '16px 28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '16px 24px', display: 'flex', flexDirection: 'column', gap: '12px',
         background: 'rgba(30, 41, 59, 0.95)', backdropFilter: 'blur(10px)',
         border: '1px solid rgba(96, 165, 250, 0.5)', boxShadow: '0 10px 25px rgba(0,0,0,0.5)'
       }}>
-        <div style={{display: 'flex', alignItems: 'center', gap: '12px'}}>
-          <Clock color="#60a5fa" size={24} />
-          <div>
-            <div style={{fontWeight: 'bold', fontSize: '1.1rem', color: '#f8fafc'}}>Projection Year: {selectedYear}</div>
-            <div style={{fontSize: '0.9rem', color: '#94a3b8'}}>Drag to see how tax savings change over time.</div>
+        <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
+          <div style={{display: 'flex', alignItems: 'center', gap: '12px'}}>
+            <Clock color="#60a5fa" size={24} />
+            <div>
+              <div style={{fontWeight: 'bold', fontSize: '1.1rem', color: '#f8fafc'}}>Projection Year: {selectedYear}</div>
+              <div style={{fontSize: '0.9rem', color: '#94a3b8'}}>Drag to see how costs and savings change over time.</div>
+            </div>
+          </div>
+          <div style={{display: 'flex', gap: '16px', alignItems: 'center'}}>
+            <label style={{display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', color: '#94a3b8', fontSize: '0.9rem'}}>
+              <input
+                type="checkbox"
+                checked={includeTaxSavings}
+                onChange={(e) => setIncludeTaxSavings(e.target.checked)}
+                style={{accentColor: '#4ade80', width: '16px', height: '16px'}}
+              />
+              Tax Savings
+            </label>
+            <div style={{display: 'flex', gap: '4px', background: 'rgba(0,0,0,0.3)', padding: '3px', borderRadius: '8px'}}>
+              <button
+                onClick={() => setIsRental(false)}
+                style={{padding: '5px 12px', borderRadius: '6px', border: 'none', fontSize: '0.85rem', background: !isRental ? '#60a5fa' : 'transparent', color: !isRental ? '#fff' : '#94a3b8', cursor: 'pointer', fontWeight: 'bold', transition: 'all 0.2s'}}
+              >Owner Occupied</button>
+              <button
+                onClick={() => setIsRental(true)}
+                style={{padding: '5px 12px', borderRadius: '6px', border: 'none', fontSize: '0.85rem', background: isRental ? '#a855f7' : 'transparent', color: isRental ? '#fff' : '#94a3b8', cursor: 'pointer', fontWeight: 'bold', transition: 'all 0.2s'}}
+              >Rental Property</button>
+            </div>
           </div>
         </div>
-        <input type="range" min="1" max="30" step="1" value={selectedYear} onChange={(e) => setSelectedYear(Number(e.target.value))} className="slider blue-slider" style={{width: '300px', margin: 0}} />
+        <input type="range" min="1" max="30" step="1" value={selectedYear} onChange={(e) => setSelectedYear(Number(e.target.value))} className="slider blue-slider" style={{width: '100%', margin: 0}} />
       </div>
 
       <div className="nav-tabs">

@@ -22,30 +22,7 @@ function CashFlowTab({
   return (
     <div className="tab-fade-in">
       <div className="card controls-card">
-        <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px'}}>
-          <h2>Adjust Rent Payments</h2>
-          <div style={{display: 'flex', gap: '16px', alignItems: 'center'}}>
-            <label style={{display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', color: '#94a3b8', fontSize: '0.95rem'}}>
-              <input
-                type="checkbox"
-                checked={includeTaxSavings}
-                onChange={(e) => setIncludeTaxSavings(e.target.checked)}
-                style={{accentColor: '#4ade80', width: '16px', height: '16px'}}
-              />
-              Include Tax Savings
-            </label>
-            <div style={{display: 'flex', gap: '8px', background: 'rgba(0,0,0,0.2)', padding: '4px', borderRadius: '8px'}}>
-              <button
-                onClick={() => setIsRental(false)}
-                style={{padding: '6px 12px', borderRadius: '6px', border: 'none', background: !isRental ? '#60a5fa' : 'transparent', color: !isRental ? '#fff' : '#94a3b8', cursor: 'pointer', fontWeight: 'bold'}}
-              >Owner Occupied</button>
-              <button
-                onClick={() => setIsRental(true)}
-                style={{padding: '6px 12px', borderRadius: '6px', border: 'none', background: isRental ? '#a855f7' : 'transparent', color: isRental ? '#fff' : '#94a3b8', cursor: 'pointer', fontWeight: 'bold'}}
-              >Rental Property</button>
-            </div>
-          </div>
-        </div>
+        <h2 style={{marginBottom: '16px'}}>Adjust Rent Payments</h2>
 
         {!isRental ? (
           <div className="sliders-wrapper">

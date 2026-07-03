@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { TrendingUp, CheckCircle, XCircle, AlertTriangle, Info } from 'lucide-react';
+import { TrendingUp, CheckCircle, XCircle, Info } from 'lucide-react';
 import { formatCurrency } from './utils';
 
 function LongTermTab({ purchasePrice, loanAmount, amortizationSchedule, hoa, propertyTaxAnnual }) {
@@ -12,7 +12,7 @@ function LongTermTab({ purchasePrice, loanAmount, amortizationSchedule, hoa, pro
     let currentHOA = hoa * 12; // annual HOA
     let currentPropertyTax = propertyTaxAnnual;
 
-    for (let year = 1; year <= 15; year++) {
+    for (let year = 1; year <= 30; year++) {
       const marketValue = purchasePrice * Math.pow(1 + appreciation / 100, year);
       const amortRow = amortizationSchedule[year - 1] || { balance: 0 };
       const loanBalance = amortRow.balance;
@@ -51,6 +51,7 @@ function LongTermTab({ purchasePrice, loanAmount, amortizationSchedule, hoa, pro
         loanBalance,
         equity,
         annualHOA: currentHOA,
+        monthlyHOA: currentHOA / 12,
         annualPropertyTax: currentPropertyTax,
         section121Status,
         capitalGain,
@@ -60,26 +61,81 @@ function LongTermTab({ purchasePrice, loanAmount, amortizationSchedule, hoa, pro
     return rows;
   }, [purchasePrice, loanAmount, amortizationSchedule, hoa, propertyTaxAnnual, hoaInflation, appreciation, moveOutYear]);
 
+  // Quick-access rows for the summary cards right next to the sliders
+  const year5 = projectionData[4];
+  const year10 = projectionData[9];
+  const year15 = projectionData[14];
+  const year30 = projectionData[29];
+
   return (
     <div className="tab-fade-in">
-      {/* Sliders */}
+
+      {/* Sliders + immediate feedback side-by-side */}
       <div className="card controls-card" style={{marginBottom: '24px'}}>
         <h2><TrendingUp className="icon" /> Long-Term Forecasting</h2>
-        <div className="sliders-wrapper" style={{flexDirection: 'row', justifyContent: 'space-around', flexWrap: 'wrap'}}>
-          <div className="slider-group" style={{width: '30%', minWidth: '200px'}}>
+
+        {/* HOA Inflation slider + immediate numbers */}
+        <div style={{display: 'flex', gap: '24px', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap'}}>
+          <div className="slider-group" style={{flex: '1 1 250px', minWidth: '200px'}}>
             <label>Annual HOA Inflation</label>
             <input type="range" min="2" max="10" step="0.5" value={hoaInflation} onChange={(e) => setHoaInflation(Number(e.target.value))} className="slider purple-slider" style={{width: '100%'}} />
             <div className="rent-value">{hoaInflation.toFixed(1)}%</div>
           </div>
-          <div className="slider-group" style={{width: '30%', minWidth: '200px'}}>
+          <div style={{flex: '1 1 300px', display: 'flex', gap: '12px', flexWrap: 'wrap'}}>
+            <div style={{background: 'rgba(168, 85, 247, 0.1)', padding: '10px 16px', borderRadius: '8px', border: '1px solid rgba(168, 85, 247, 0.2)', flex: 1, minWidth: '120px', textAlign: 'center'}}>
+              <div style={{color: '#94a3b8', fontSize: '0.8rem'}}>HOA Today</div>
+              <div style={{color: '#e2e8f0', fontWeight: 'bold'}}>{formatCurrency(hoa)}/mo</div>
+            </div>
+            <div style={{background: 'rgba(168, 85, 247, 0.1)', padding: '10px 16px', borderRadius: '8px', border: '1px solid rgba(168, 85, 247, 0.2)', flex: 1, minWidth: '120px', textAlign: 'center'}}>
+              <div style={{color: '#94a3b8', fontSize: '0.8rem'}}>Year 10</div>
+              <div style={{color: '#e2e8f0', fontWeight: 'bold'}}>{formatCurrency(year10?.monthlyHOA || 0)}/mo</div>
+            </div>
+            <div style={{background: 'rgba(168, 85, 247, 0.15)', padding: '10px 16px', borderRadius: '8px', border: '1px solid rgba(168, 85, 247, 0.3)', flex: 1, minWidth: '120px', textAlign: 'center'}}>
+              <div style={{color: '#94a3b8', fontSize: '0.8rem'}}>Year 30</div>
+              <div style={{color: '#a855f7', fontWeight: 'bold'}}>{formatCurrency(year30?.monthlyHOA || 0)}/mo</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Appreciation slider + immediate numbers */}
+        <div style={{display: 'flex', gap: '24px', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap'}}>
+          <div className="slider-group" style={{flex: '1 1 250px', minWidth: '200px'}}>
             <label>Annual Home Appreciation</label>
             <input type="range" min="1" max="8" step="0.5" value={appreciation} onChange={(e) => setAppreciation(Number(e.target.value))} className="slider blue-slider" style={{width: '100%'}} />
             <div className="rent-value">{appreciation.toFixed(1)}%</div>
           </div>
-          <div className="slider-group" style={{width: '30%', minWidth: '200px'}}>
+          <div style={{flex: '1 1 300px', display: 'flex', gap: '12px', flexWrap: 'wrap'}}>
+            <div style={{background: 'rgba(96, 165, 250, 0.1)', padding: '10px 16px', borderRadius: '8px', border: '1px solid rgba(96, 165, 250, 0.2)', flex: 1, minWidth: '120px', textAlign: 'center'}}>
+              <div style={{color: '#94a3b8', fontSize: '0.8rem'}}>Today</div>
+              <div style={{color: '#e2e8f0', fontWeight: 'bold'}}>{formatCurrency(purchasePrice)}</div>
+            </div>
+            <div style={{background: 'rgba(96, 165, 250, 0.1)', padding: '10px 16px', borderRadius: '8px', border: '1px solid rgba(96, 165, 250, 0.2)', flex: 1, minWidth: '120px', textAlign: 'center'}}>
+              <div style={{color: '#94a3b8', fontSize: '0.8rem'}}>Year 10</div>
+              <div style={{color: '#e2e8f0', fontWeight: 'bold'}}>{formatCurrency(year10?.marketValue || 0)}</div>
+            </div>
+            <div style={{background: 'rgba(96, 165, 250, 0.15)', padding: '10px 16px', borderRadius: '8px', border: '1px solid rgba(96, 165, 250, 0.3)', flex: 1, minWidth: '120px', textAlign: 'center'}}>
+              <div style={{color: '#94a3b8', fontSize: '0.8rem'}}>Year 30</div>
+              <div style={{color: '#60a5fa', fontWeight: 'bold'}}>{formatCurrency(year30?.marketValue || 0)}</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Move-out year slider + immediate feedback */}
+        <div style={{display: 'flex', gap: '24px', alignItems: 'center', flexWrap: 'wrap'}}>
+          <div className="slider-group" style={{flex: '1 1 250px', minWidth: '200px'}}>
             <label>Move-Out Year</label>
             <input type="range" min="2" max="10" step="1" value={moveOutYear} onChange={(e) => setMoveOutYear(Number(e.target.value))} className="slider" style={{width: '100%', background: 'linear-gradient(90deg, #4ade80, #f87171)'}} />
             <div className="rent-value">Year {moveOutYear}</div>
+          </div>
+          <div style={{flex: '1 1 300px', display: 'flex', gap: '12px', flexWrap: 'wrap'}}>
+            <div style={{background: 'rgba(74, 222, 128, 0.1)', padding: '10px 16px', borderRadius: '8px', border: '1px solid rgba(74, 222, 128, 0.2)', flex: 1, minWidth: '150px', textAlign: 'center'}}>
+              <div style={{color: '#94a3b8', fontSize: '0.8rem'}}>Tax-Free Sale Window</div>
+              <div style={{color: '#4ade80', fontWeight: 'bold'}}>Year {moveOutYear + 1} – {moveOutYear + 3}</div>
+            </div>
+            <div style={{background: 'rgba(248, 113, 113, 0.1)', padding: '10px 16px', borderRadius: '8px', border: '1px solid rgba(248, 113, 113, 0.2)', flex: 1, minWidth: '150px', textAlign: 'center'}}>
+              <div style={{color: '#94a3b8', fontSize: '0.8rem'}}>Exclusion Expires</div>
+              <div style={{color: '#f87171', fontWeight: 'bold'}}>After Year {moveOutYear + 3}</div>
+            </div>
           </div>
         </div>
       </div>
@@ -107,7 +163,7 @@ function LongTermTab({ purchasePrice, loanAmount, amortizationSchedule, hoa, pro
 
       {/* Projection Table */}
       <div className="card" style={{marginBottom: '24px'}}>
-        <h2><TrendingUp className="icon" /> 15-Year Projection</h2>
+        <h2><TrendingUp className="icon" /> 30-Year Projection</h2>
         <div className="table-wrapper">
           <table className="amort-table">
             <thead>
@@ -116,7 +172,7 @@ function LongTermTab({ purchasePrice, loanAmount, amortizationSchedule, hoa, pro
                 <th>Market Value</th>
                 <th>Loan Balance</th>
                 <th>Equity</th>
-                <th>Annual HOA</th>
+                <th>Monthly HOA</th>
                 <th>Annual Prop Tax</th>
                 <th>Section 121</th>
                 <th>Taxable Gain if Sold</th>
@@ -144,7 +200,7 @@ function LongTermTab({ purchasePrice, loanAmount, amortizationSchedule, hoa, pro
                     <td>{formatCurrency(row.marketValue)}</td>
                     <td>{formatCurrency(row.loanBalance)}</td>
                     <td className="positive">{formatCurrency(row.equity)}</td>
-                    <td>{formatCurrency(row.annualHOA)}</td>
+                    <td>{formatCurrency(row.monthlyHOA)}</td>
                     <td>{formatCurrency(row.annualPropertyTax)}</td>
                     <td>
                       {row.section121Status === 'living' && <span style={{color: '#60a5fa'}}>🏠 Living Here</span>}
@@ -173,37 +229,17 @@ function LongTermTab({ purchasePrice, loanAmount, amortizationSchedule, hoa, pro
         <div className="card">
           <div className="card-header">HOA Growth Impact</div>
           <div className="card-body">
-            <div className="row">
-              <span>Year 1 HOA:</span>
-              <span>{formatCurrency(hoa * 12)} / yr</span>
-            </div>
-            <div className="row">
-              <span>Year 15 HOA ({hoaInflation}%/yr):</span>
-              <span className="negative">{formatCurrency(projectionData[14]?.annualHOA || 0)} / yr</span>
-            </div>
-            <hr style={{opacity: 0.2}} />
-            <div className="row total">
-              <span>Increase:</span>
-              <span className="negative">+{formatCurrency((projectionData[14]?.annualHOA || 0) - hoa * 12)} / yr</span>
-            </div>
+            <div className="row"><span>Year 1 HOA:</span> <span>{formatCurrency(hoa)}/mo</span></div>
+            <div className="row"><span>Year 15 HOA:</span> <span>{formatCurrency(year15?.monthlyHOA || 0)}/mo</span></div>
+            <div className="row"><span>Year 30 HOA:</span> <span className="negative">{formatCurrency(year30?.monthlyHOA || 0)}/mo</span></div>
           </div>
         </div>
         <div className="card">
-          <div className="card-header">Equity at Year 15</div>
+          <div className="card-header">Equity Milestones</div>
           <div className="card-body">
-            <div className="row">
-              <span>Market Value ({appreciation}%/yr):</span>
-              <span>{formatCurrency(projectionData[14]?.marketValue || 0)}</span>
-            </div>
-            <div className="row">
-              <span>Remaining Loan:</span>
-              <span>{formatCurrency(projectionData[14]?.loanBalance || 0)}</span>
-            </div>
-            <hr style={{opacity: 0.2}} />
-            <div className="row total">
-              <span>Your Equity:</span>
-              <span className="positive">{formatCurrency(projectionData[14]?.equity || 0)}</span>
-            </div>
+            <div className="row"><span>Year 5 Equity:</span> <span className="positive">{formatCurrency(year5?.equity || 0)}</span></div>
+            <div className="row"><span>Year 15 Equity:</span> <span className="positive">{formatCurrency(year15?.equity || 0)}</span></div>
+            <div className="row"><span>Year 30 Equity:</span> <span className="positive">{formatCurrency(year30?.equity || 0)}</span></div>
           </div>
         </div>
       </div>
