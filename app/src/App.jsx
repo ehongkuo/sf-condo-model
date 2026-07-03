@@ -11,6 +11,7 @@ function App() {
   const [brotherRent, setBrotherRent] = useState(1500);
   const [isRental, setIsRental] = useState(false);
   const [tenantRent, setTenantRent] = useState(4000);
+  const [includeTaxSavings, setIncludeTaxSavings] = useState(true);
   const [purchasePrice, setPurchasePrice] = useState(1050000);
   const [interestRate, setInterestRate] = useState(6.5);
   const [selectedYear, setSelectedYear] = useState(1);
@@ -81,6 +82,7 @@ function App() {
   const marginalRate = 0.24;
   const annualTaxSavings = incrementalDeduction * marginalRate;
   const userTaxShield = annualTaxSavings / 12;
+  const appliedTaxShield = includeTaxSavings ? userTaxShield : 0;
   
   // 4. Distributions
   const dadRentIncome = totalRent * 0.5;
@@ -90,14 +92,14 @@ function App() {
   const userRentIncome = totalRent * 0.25;
   const userExpenses = propertyCosts * 0.25;
   const userNet = isRental 
-    ? userRentIncome - userExpenses + userTaxShield
-    : userRentIncome - userRent - userExpenses + userTaxShield;
+    ? userRentIncome - userExpenses + appliedTaxShield
+    : userRentIncome - userRent - userExpenses + appliedTaxShield;
   
   const brotherRentIncome = totalRent * 0.25;
   const brotherExpenses = propertyCosts * 0.25;
   const brotherNet = isRental 
-    ? brotherRentIncome - brotherExpenses + userTaxShield
-    : brotherRentIncome - brotherRent - brotherExpenses + userTaxShield;
+    ? brotherRentIncome - brotherExpenses + appliedTaxShield
+    : brotherRentIncome - brotherRent - brotherExpenses + appliedTaxShield;
 
   // Helper for the monthly interest/principal split display
   const monthlyInterest = totalInterestForYear / 12;
@@ -146,15 +148,26 @@ function App() {
             <div className="card controls-card">
               <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px'}}>
                 <h2>Adjust Rent Payments</h2>
-                <div style={{display: 'flex', gap: '8px', background: 'rgba(0,0,0,0.2)', padding: '4px', borderRadius: '8px'}}>
-                  <button 
-                    onClick={() => setIsRental(false)}
-                    style={{padding: '6px 12px', borderRadius: '6px', border: 'none', background: !isRental ? '#60a5fa' : 'transparent', color: !isRental ? '#fff' : '#94a3b8', cursor: 'pointer', fontWeight: 'bold'}}
-                  >Owner Occupied</button>
-                  <button 
-                    onClick={() => setIsRental(true)}
-                    style={{padding: '6px 12px', borderRadius: '6px', border: 'none', background: isRental ? '#a855f7' : 'transparent', color: isRental ? '#fff' : '#94a3b8', cursor: 'pointer', fontWeight: 'bold'}}
-                  >Rental Property</button>
+                <div style={{display: 'flex', gap: '16px', alignItems: 'center'}}>
+                  <label style={{display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', color: '#94a3b8', fontSize: '0.95rem'}}>
+                    <input 
+                      type="checkbox" 
+                      checked={includeTaxSavings} 
+                      onChange={(e) => setIncludeTaxSavings(e.target.checked)} 
+                      style={{accentColor: '#4ade80', width: '16px', height: '16px'}}
+                    />
+                    Include Tax Savings
+                  </label>
+                  <div style={{display: 'flex', gap: '8px', background: 'rgba(0,0,0,0.2)', padding: '4px', borderRadius: '8px'}}>
+                    <button 
+                      onClick={() => setIsRental(false)}
+                      style={{padding: '6px 12px', borderRadius: '6px', border: 'none', background: !isRental ? '#60a5fa' : 'transparent', color: !isRental ? '#fff' : '#94a3b8', cursor: 'pointer', fontWeight: 'bold'}}
+                    >Owner Occupied</button>
+                    <button 
+                      onClick={() => setIsRental(true)}
+                      style={{padding: '6px 12px', borderRadius: '6px', border: 'none', background: isRental ? '#a855f7' : 'transparent', color: isRental ? '#fff' : '#94a3b8', cursor: 'pointer', fontWeight: 'bold'}}
+                    >Rental Property</button>
+                  </div>
                 </div>
               </div>
               
@@ -201,7 +214,7 @@ function App() {
                   <div className="row"><span>25% Property Costs:</span> <span className="negative">-{formatCurrency(userExpenses)}</span></div>
                   {!isRental && <div className="row"><span>Rent Paid Out:</span> <span className="negative">-{formatCurrency(userRent)}</span></div>}
                   <div className="row"><span>25% Rent Pot:</span> <span className="positive">+{formatCurrency(userRentIncome)}</span></div>
-                  <div className="row"><span>Tax Savings:</span> <span className="positive">+{formatCurrency(userTaxShield)}</span></div>
+                  {includeTaxSavings && <div className="row"><span>Tax Savings:</span> <span className="positive">+{formatCurrency(userTaxShield)}</span></div>}
                   <hr />
                   <div className="row total"><span>Net Flow:</span> <span className={userNet >= 0 ? "positive" : "negative"}>{formatCurrency(userNet)}</span></div>
                 </div>
@@ -212,7 +225,7 @@ function App() {
                   <div className="row"><span>25% Property Costs:</span> <span className="negative">-{formatCurrency(brotherExpenses)}</span></div>
                   {!isRental && <div className="row"><span>Rent Paid Out:</span> <span className="negative">-{formatCurrency(brotherRent)}</span></div>}
                   <div className="row"><span>25% Rent Pot:</span> <span className="positive">+{formatCurrency(brotherRentIncome)}</span></div>
-                  <div className="row"><span>Tax Savings:</span> <span className="positive">+{formatCurrency(userTaxShield)}</span></div>
+                  {includeTaxSavings && <div className="row"><span>Tax Savings:</span> <span className="positive">+{formatCurrency(userTaxShield)}</span></div>}
                   <hr />
                   <div className="row total"><span>Net Flow:</span> <span className={brotherNet >= 0 ? "positive" : "negative"}>{formatCurrency(brotherNet)}</span></div>
                 </div>
