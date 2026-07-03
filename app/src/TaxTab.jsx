@@ -17,7 +17,8 @@ function TaxTab({
   userShareOfDepreciation,
   totalRentalDeductions,
   rentalIncome, netRentalIncome,
-  rentalTaxImpact, monthlyRentalTaxCost
+  rentalTaxImpact, monthlyRentalTaxCost,
+  cumulativeSuspendedLoss
 }) {
   
   if (isRental) {
@@ -129,6 +130,7 @@ function TaxTab({
                   <div style={{color: '#4ade80', fontWeight: 'bold', marginBottom: '12px'}}>✅ But the loss isn't wasted</div>
                   <p style={{color: '#e2e8f0', margin: '0 0 12px 0'}}>This {formatCurrency(Math.abs(netRentalIncome))}/yr loss is <strong>suspended</strong> and accumulates. When you eventually sell the property, all suspended losses unlock and reduce your capital gains taxes — potentially saving you tens of thousands.</p>
                   <div className="row"><span>Annual suspended loss:</span> <span>{formatCurrency(Math.abs(netRentalIncome))}</span></div>
+                  <div className="row"><span>Cumulative loss (Year {selectedYear}):</span> <span style={{color: '#4ade80'}}>{formatCurrency(cumulativeSuspendedLoss)}</span></div>
                   <div className="row"><span>Additional tax owed on rental income:</span> <span className="positive">{formatCurrency(0)} (it's a loss!)</span></div>
                 </div>
               </>

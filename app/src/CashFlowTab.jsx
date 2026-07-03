@@ -12,7 +12,7 @@ function CashFlowTab({
   dadExpenses, dadRentIncome, dadNet,
   userExpenses, userRentIncome, userNet, userTaxShield,
   brotherExpenses, brotherRentIncome, brotherNet,
-  propertyCosts,
+  propertyCosts, mortgage, propertyTax, hoa,
   selectedYear,
 }) {
   // Gift tax check: Dad's net annual gift
@@ -54,7 +54,10 @@ function CashFlowTab({
         <div className="card dad-card">
           <div className="card-header">Dad's Net Monthly Flow (Year {selectedYear})</div>
           <div className="card-body">
-            <div className="row"><span>50% Property Costs:</span> <span className="negative">-{formatCurrency(dadExpenses)}</span></div>
+            <div className="row" style={{marginBottom: '4px', fontWeight: 'bold'}}><span>50% Property Costs:</span> <span className="negative">-{formatCurrency(dadExpenses)}</span></div>
+            <div className="row" style={{fontSize: '0.85rem', color: '#94a3b8', paddingLeft: '16px'}}><span>├─ Mortgage ({formatCurrency(mortgage)} × 50%):</span> <span>-{formatCurrency(mortgage * 0.5)}</span></div>
+            <div className="row" style={{fontSize: '0.85rem', color: '#94a3b8', paddingLeft: '16px'}}><span>├─ Tax ({formatCurrency(propertyTax)} × 50%):</span> <span>-{formatCurrency(propertyTax * 0.5)}</span></div>
+            <div className="row" style={{fontSize: '0.85rem', color: '#94a3b8', paddingLeft: '16px', marginBottom: '8px'}}><span>└─ HOA ({formatCurrency(hoa)} × 50%):</span> <span>-{formatCurrency(hoa * 0.5)}</span></div>
             <div className="row"><span>50% Rent Pot:</span> <span className="positive">+{formatCurrency(dadRentIncome)}</span></div>
             <hr />
             <div className="row total"><span>Net Flow:</span> <span className={dadNet >= 0 ? "positive" : "negative"}>{formatCurrency(dadNet)}</span></div>
@@ -63,10 +66,13 @@ function CashFlowTab({
         <div className="card user-card">
           <div className="card-header">Your Net Monthly Flow (Year {selectedYear})</div>
           <div className="card-body">
-            <div className="row"><span>25% Property Costs:</span> <span className="negative">-{formatCurrency(userExpenses)}</span></div>
+            <div className="row" style={{marginBottom: '4px', fontWeight: 'bold'}}><span>25% Property Costs:</span> <span className="negative">-{formatCurrency(userExpenses)}</span></div>
+            <div className="row" style={{fontSize: '0.85rem', color: '#94a3b8', paddingLeft: '16px'}}><span>├─ Mortgage ({formatCurrency(mortgage)} × 25%):</span> <span>-{formatCurrency(mortgage * 0.25)}</span></div>
+            <div className="row" style={{fontSize: '0.85rem', color: '#94a3b8', paddingLeft: '16px'}}><span>├─ Tax ({formatCurrency(propertyTax)} × 25%):</span> <span>-{formatCurrency(propertyTax * 0.25)}</span></div>
+            <div className="row" style={{fontSize: '0.85rem', color: '#94a3b8', paddingLeft: '16px', marginBottom: '8px'}}><span>└─ HOA ({formatCurrency(hoa)} × 25%):</span> <span>-{formatCurrency(hoa * 0.25)}</span></div>
             {!isRental && <div className="row"><span>Rent Paid Out:</span> <span className="negative">-{formatCurrency(userRent)}</span></div>}
             <div className="row"><span>25% Rent Pot:</span> <span className="positive">+{formatCurrency(userRentIncome)}</span></div>
-            {includeTaxSavings && <div className="row"><span>Tax Savings:</span> <span className="positive">+{formatCurrency(userTaxShield)}</span></div>}
+            {includeTaxSavings && <div className="row"><span>Tax Savings (Schedule {isRental ? 'E' : 'A'}):</span> <span className={userTaxShield >= 0 ? "positive" : "negative"}>{userTaxShield > 0 ? '+' : ''}{formatCurrency(userTaxShield)}</span></div>}
             <hr />
             <div className="row total"><span>Net Flow:</span> <span className={userNet >= 0 ? "positive" : "negative"}>{formatCurrency(userNet)}</span></div>
           </div>
@@ -74,10 +80,13 @@ function CashFlowTab({
         <div className="card user-card">
           <div className="card-header">Brother's Net Monthly Flow (Year {selectedYear})</div>
           <div className="card-body">
-            <div className="row"><span>25% Property Costs:</span> <span className="negative">-{formatCurrency(brotherExpenses)}</span></div>
+            <div className="row" style={{marginBottom: '4px', fontWeight: 'bold'}}><span>25% Property Costs:</span> <span className="negative">-{formatCurrency(brotherExpenses)}</span></div>
+            <div className="row" style={{fontSize: '0.85rem', color: '#94a3b8', paddingLeft: '16px'}}><span>├─ Mortgage ({formatCurrency(mortgage)} × 25%):</span> <span>-{formatCurrency(mortgage * 0.25)}</span></div>
+            <div className="row" style={{fontSize: '0.85rem', color: '#94a3b8', paddingLeft: '16px'}}><span>├─ Tax ({formatCurrency(propertyTax)} × 25%):</span> <span>-{formatCurrency(propertyTax * 0.25)}</span></div>
+            <div className="row" style={{fontSize: '0.85rem', color: '#94a3b8', paddingLeft: '16px', marginBottom: '8px'}}><span>└─ HOA ({formatCurrency(hoa)} × 25%):</span> <span>-{formatCurrency(hoa * 0.25)}</span></div>
             {!isRental && <div className="row"><span>Rent Paid Out:</span> <span className="negative">-{formatCurrency(brotherRent)}</span></div>}
             <div className="row"><span>25% Rent Pot:</span> <span className="positive">+{formatCurrency(brotherRentIncome)}</span></div>
-            {includeTaxSavings && <div className="row"><span>Tax Savings:</span> <span className="positive">+{formatCurrency(userTaxShield)}</span></div>}
+            {includeTaxSavings && <div className="row"><span>Tax Savings (Schedule {isRental ? 'E' : 'A'}):</span> <span className={userTaxShield >= 0 ? "positive" : "negative"}>{userTaxShield > 0 ? '+' : ''}{formatCurrency(userTaxShield)}</span></div>}
             <hr />
             <div className="row total"><span>Net Flow:</span> <span className={brotherNet >= 0 ? "positive" : "negative"}>{formatCurrency(brotherNet)}</span></div>
           </div>

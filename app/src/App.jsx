@@ -114,6 +114,30 @@ function App() {
   const rentalTaxImpact = netRentalIncome >= 0 ? netRentalIncome * marginalRate : 0;
   const monthlyRentalTaxCost = rentalTaxImpact / 12;
 
+  // Calculate cumulative suspended losses up to selectedYear
+  const cumulativeSuspendedLoss = useMemo(() => {
+    let cumulative = 0;
+    for (let i = 1; i <= selectedYear; i++) {
+      const yearData = amortizationSchedule[i - 1] || { interest: 0 };
+      const yInterest = yearData.interest / 2;
+      
+      const yPropTaxAnnual = basePropertyTaxAnnual * Math.pow(1.02, i > 1 ? i - 1 : 0);
+      const yPropTax = yPropTaxAnnual / 2;
+      
+      const yHOAAnnual = (baseHOA * 12) * Math.pow(1 + hoaInflation / 100, i > 1 ? i - 1 : 0);
+      const yHOA = yHOAAnnual / 2;
+      
+      const yDeductions = yInterest + yPropTax + yHOA + userShareOfDepreciation;
+      const yIncome = (totalRent * 12) / 2;
+      const yNet = yIncome - yDeductions;
+      
+      if (yNet < 0) {
+        cumulative += Math.abs(yNet);
+      }
+    }
+    return cumulative;
+  }, [selectedYear, amortizationSchedule, basePropertyTaxAnnual, baseHOA, hoaInflation, userShareOfDepreciation, totalRent]);
+
   // The actual applied tax shield (added to net cash flow)
   // Owner: positive savings. Rental: negative cost (if profit), or 0 (if loss).
   const appliedTaxShield = includeTaxSavings 
@@ -190,12 +214,12 @@ function App() {
         <div style={{display: 'flex', gap: '20px', flexWrap: 'wrap'}}>
           <div className="slider-group" style={{flex: 1, minWidth: '150px'}}>
             <label style={{fontSize: '0.8rem'}}>Purchase Price</label>
-            <input type="range" min="800000" max="1500000" step="10000" value={purchasePrice} onChange={(e) => setPurchasePrice(Number(e.target.value))} className="slider" style={{width: '100%'}} />
+            <input type="range" min="800000" max="3000000" step="10000" value={purchasePrice} onChange={(e) => setPurchasePrice(Number(e.target.value))} className="slider" style={{width: '100%'}} />
             <div className="rent-value" style={{fontSize: '0.9rem'}}>{formatCurrency(purchasePrice)}</div>
           </div>
           <div className="slider-group" style={{flex: 1, minWidth: '150px'}}>
             <label style={{fontSize: '0.8rem'}}>Interest Rate</label>
-            <input type="range" min="3.0" max="8.0" step="0.125" value={interestRate} onChange={(e) => setInterestRate(Number(e.target.value))} className="slider" style={{width: '100%'}} />
+            <input type="range" min="3.0" max="10.0" step="0.125" value={interestRate} onChange={(e) => setInterestRate(Number(e.target.value))} className="slider" style={{width: '100%'}} />
             <div className="rent-value" style={{fontSize: '0.9rem'}}>{interestRate.toFixed(3)}%</div>
           </div>
           <div className="slider-group" style={{flex: 1, minWidth: '150px'}}>
@@ -205,7 +229,7 @@ function App() {
           </div>
           <div className="slider-group" style={{flex: 1, minWidth: '150px'}}>
             <label style={{fontSize: '0.8rem'}}>Appreciation</label>
-            <input type="range" min="1" max="8" step="0.5" value={appreciation} onChange={(e) => setAppreciation(Number(e.target.value))} className="slider blue-slider" style={{width: '100%'}} />
+            <input type="range" min="1" max="15" step="0.5" value={appreciation} onChange={(e) => setAppreciation(Number(e.target.value))} className="slider blue-slider" style={{width: '100%'}} />
             <div className="rent-value" style={{fontSize: '0.9rem'}}>{appreciation.toFixed(1)}%</div>
           </div>
           <div className="slider-group" style={{flex: 1, minWidth: '150px'}}>
@@ -216,19 +240,19 @@ function App() {
           {isRental ? (
             <div className="slider-group" style={{flex: 1, minWidth: '150px'}}>
               <label style={{fontSize: '0.8rem'}}>Tenant Rent (Monthly)</label>
-              <input type="range" min="0" max="8000" step="100" value={tenantRent} onChange={(e) => setTenantRent(Number(e.target.value))} className="slider" style={{width: '100%', background: 'linear-gradient(90deg, #60a5fa, #a855f7)'}} />
+              <input type="range" min="0" max="15000" step="100" value={tenantRent} onChange={(e) => setTenantRent(Number(e.target.value))} className="slider" style={{width: '100%', background: 'linear-gradient(90deg, #60a5fa, #a855f7)'}} />
               <div className="rent-value" style={{fontSize: '0.9rem'}}>{formatCurrency(tenantRent)}</div>
             </div>
           ) : (
             <>
               <div className="slider-group" style={{flex: 1, minWidth: '150px'}}>
                 <label style={{fontSize: '0.8rem'}}>Your Rent</label>
-                <input type="range" min="0" max="5000" step="100" value={userRent} onChange={(e) => setUserRent(Number(e.target.value))} className="slider blue-slider" style={{width: '100%'}} />
+                <input type="range" min="0" max="10000" step="100" value={userRent} onChange={(e) => setUserRent(Number(e.target.value))} className="slider blue-slider" style={{width: '100%'}} />
                 <div className="rent-value" style={{fontSize: '0.9rem'}}>{formatCurrency(userRent)}</div>
               </div>
               <div className="slider-group" style={{flex: 1, minWidth: '150px'}}>
                 <label style={{fontSize: '0.8rem'}}>Brother's Rent</label>
-                <input type="range" min="0" max="5000" step="100" value={brotherRent} onChange={(e) => setBrotherRent(Number(e.target.value))} className="slider purple-slider" style={{width: '100%'}} />
+                <input type="range" min="0" max="10000" step="100" value={brotherRent} onChange={(e) => setBrotherRent(Number(e.target.value))} className="slider purple-slider" style={{width: '100%'}} />
                 <div className="rent-value" style={{fontSize: '0.9rem'}}>{formatCurrency(brotherRent)}</div>
               </div>
             </>
@@ -263,7 +287,7 @@ function App() {
             dadExpenses={dadExpenses} dadRentIncome={dadRentIncome} dadNet={dadNet}
             userExpenses={userExpenses} userRentIncome={userRentIncome} userNet={userNet} userTaxShield={appliedTaxShield}
             brotherExpenses={brotherExpenses} brotherRentIncome={brotherRentIncome} brotherNet={brotherNet}
-            propertyCosts={propertyCosts}
+            propertyCosts={propertyCosts} mortgage={mortgage} propertyTax={propertyTax} hoa={hoa}
             selectedYear={selectedYear}
           />
         )}
@@ -294,6 +318,7 @@ function App() {
             totalRentalDeductions={totalRentalDeductions}
             rentalIncome={rentalIncome} netRentalIncome={netRentalIncome}
             rentalTaxImpact={rentalTaxImpact} monthlyRentalTaxCost={monthlyRentalTaxCost}
+            cumulativeSuspendedLoss={cumulativeSuspendedLoss}
           />
         )}
 
