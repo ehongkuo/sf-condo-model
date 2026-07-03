@@ -12,40 +12,14 @@ function TaxTab({
   saltTotal, totalItemized, incrementalDeduction,
   annualTaxSavings, userTaxShield,
   // Rental props
-  purchasePrice, totalInterestForYear, propertyTaxAnnual,
-  totalRent,
+  purchasePrice,
+  rentalInterest, rentalPropertyTax, rentalHOA,
+  userShareOfDepreciation,
+  totalRentalDeductions,
+  rentalIncome, netRentalIncome,
+  rentalTaxImpact, monthlyRentalTaxCost
 }) {
-  // Schedule E rental tax calculations
-  const buildingRatio = 0.80;
-  const depreciationBasis = purchasePrice * buildingRatio;
-  const annualDepreciation = depreciationBasis / 27.5;
-  const userShareOfDepreciation = annualDepreciation / 2;
-
-  // Rental Schedule E deductions (50% share, no SALT/TCJA caps)
-  const rentalInterest = totalInterestForYear / 2;
-  const rentalPropertyTax = propertyTaxAnnual / 2;
-  const rentalHOA = hoa * 12 / 2;
-  const totalRentalDeductions = rentalInterest + rentalPropertyTax + rentalHOA + userShareOfDepreciation;
-
-  // Rental income (50% share — brothers get 25% each)
-  const rentalIncome = (totalRent * 12) / 2;
-  const netRentalIncome = rentalIncome - totalRentalDeductions;
-
-  // Rental tax comparison: what would you owe without the house vs with it?
-  const marginalRate = 0.24;
-  const standardDeduction = 16100;
-  const caStateTax = 16000;
-
-  // Without house: standard deduction
-  const taxableWithout = 213000 - standardDeduction;
-
-  // With rental house: you still take standard deduction on W2 income,
-  // but rental income/loss is reported separately on Schedule E
-  const rentalTaxImpact = netRentalIncome >= 0 ? netRentalIncome * marginalRate : 0;
-
-  // Monthly comparison: what's the effective tax benefit?
-  const monthlyRentalTaxCost = rentalTaxImpact / 12;
-
+  
   if (isRental) {
     return (
       <div className="tab-fade-in">
@@ -92,7 +66,7 @@ function TaxTab({
 
             <div style={{background: 'rgba(74, 222, 128, 0.1)', padding: '20px', borderRadius: '12px', border: '1px solid rgba(74, 222, 128, 0.3)', marginBottom: '16px'}}>
               <div style={{color: '#4ade80', fontWeight: 'bold', marginBottom: '12px'}}>Income (your 50% of rent)</div>
-              <div className="row"><span>50% of Tenant Rent ({formatCurrency(totalRent)}/mo × 12):</span> <span className="positive">{formatCurrency(rentalIncome)} / yr</span></div>
+              <div className="row"><span>50% of Tenant Rent:</span> <span className="positive">{formatCurrency(rentalIncome)} / yr</span></div>
             </div>
 
             <div style={{textAlign: 'center', margin: '12px 0', color: '#94a3b8', fontSize: '1.2rem'}}>minus</div>
@@ -229,7 +203,7 @@ function TaxTab({
       {/* STEP 1 */}
       <div className="card" style={{marginBottom: '24px'}}>
         <div className="card-header" style={{fontSize: '1.3rem'}}>
-          Step 1: What do we pay every month?
+          Step 1: What do we pay every month (Year {selectedYear})?
         </div>
         <div className="card-body">
           <p style={{color: '#94a3b8', marginBottom: '20px'}}>Every month, we pay 4 things for this house. But the government only gives tax breaks on 2 of them.</p>

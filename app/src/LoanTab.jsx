@@ -10,21 +10,6 @@ function LoanTab({
 }) {
   return (
     <div className="tab-fade-in">
-      <div className="card controls-card" style={{marginBottom: '24px'}}>
-        <h2><Building className="icon" /> Property & Loan Sliders</h2>
-        <div className="sliders-wrapper" style={{flexDirection: 'row', justifyContent: 'space-around', flexWrap: 'wrap'}}>
-          <div className="slider-group" style={{width: '45%'}}>
-            <label>Purchase Price</label>
-            <input type="range" min="800000" max="1500000" step="10000" value={purchasePrice} onChange={(e) => setPurchasePrice(Number(e.target.value))} className="slider blue-slider" style={{width: '100%'}}/>
-            <div className="rent-value">{formatCurrency(purchasePrice)}</div>
-          </div>
-          <div className="slider-group" style={{width: '45%'}}>
-            <label>Interest Rate (30-Year Fixed)</label>
-            <input type="range" min="4.0" max="8.0" step="0.1" value={interestRate} onChange={(e) => setInterestRate(Number(e.target.value))} className="slider purple-slider" style={{width: '100%'}}/>
-            <div className="rent-value">{interestRate.toFixed(1)}%</div>
-          </div>
-        </div>
-      </div>
       <div className="grid">
         <div className="card">
           <h2>How Payments Are Derived</h2>
