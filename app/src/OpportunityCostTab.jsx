@@ -40,6 +40,10 @@ function OpportunityCostTab({
     let totalHouseCashBurned = 0;
     let totalRentCashBurned = 0;
 
+    let finalMonthlyHouseCost = 0;
+    let finalMonthlyRentCost = 0;
+    let totalPortfolioContributions = 0;
+
     // Loop through every month up to selectedYear
     for (let m = 1; m <= selectedYear * 12; m++) {
       const yearIndex = Math.floor((m - 1) / 12);
@@ -77,7 +81,15 @@ function OpportunityCostTab({
 
       // Add/Subtract the difference
       stockPortfolio += cashDifference;
+      totalPortfolioContributions += cashDifference;
+
+      if (m === selectedYear * 12) {
+        finalMonthlyHouseCost = userNetCostThisMonth;
+        finalMonthlyRentCost = currentEquivalentRent;
+      }
     }
+
+    const totalMarketGains = stockPortfolio - totalInitialSunkUser - totalPortfolioContributions;
 
     // --- FINAL PAYDAY FOR BUYING ---
     const finalPropertyVal = purchasePrice * Math.pow(1 + appreciation / 100, selectedYear);
@@ -108,7 +120,13 @@ function OpportunityCostTab({
       totalRentCashBurned,
       pathAWins,
       delta,
-      remainingLoanTotal
+      remainingLoanTotal,
+      finalMonthlyHouseCost,
+      finalMonthlyRentCost,
+      initialDownPaymentUser,
+      initialClosingCostsUser,
+      totalPortfolioContributions,
+      totalMarketGains
     };
   }, [
     purchasePrice,
@@ -217,27 +235,23 @@ function OpportunityCostTab({
               : "1px solid rgba(255,255,255,0.08)",
           }}
         >
-          <div
-            className="card-header"
-            style={{ color: data.pathAWins ? "#4ade80" : "inherit" }}
-          >
+          <div className="card-header" style={{ color: data.pathAWins ? "#4ade80" : "inherit" }}>
             Path A: Buy the Condo
           </div>
           <div className="card-body">
-            <div className="row"><span>Initial Cash Sunk:</span> <span className="negative">-{formatCurrency(data.totalInitialSunkUser)}</span></div>
-            <div className="row"><span>Total Monthly Costs Burned:</span> <span className="negative">-{formatCurrency(data.totalHouseCashBurned)}</span></div>
-            <div style={{color: '#94a3b8', fontSize: '0.85rem', paddingLeft: '12px', marginBottom: '8px'}}>
-              * Accounts for HOA growing at {hoaInflation}%/yr and Property Taxes growing at 2%/yr.
+            <div className="row"><span>Starting Cash (Day 1):</span> <span className="positive">+{formatCurrency(data.totalInitialSunkUser)}</span></div>
+            <div className="row"><span>Minus Buyer Closing Costs:</span> <span className="negative">-{formatCurrency(data.initialClosingCostsUser)}</span></div>
+            <div className="row"><span>Plus Principal Paid Down:</span> <span className="positive">+{formatCurrency((loanAmount * userShare) - (data.remainingLoanTotal * userShare))}</span></div>
+            <div className="row"><span>Plus Property Appreciation:</span> <span className="positive">+{formatCurrency((data.finalPropertyVal * userShare) - (purchasePrice * userShare))}</span></div>
+            <div className="row"><span>Minus Seller Fees (6%):</span> <span className="negative">-{formatCurrency(data.finalPropertyVal * sellerClosingCostsPercent * userShare)}</span></div>
+            <hr style={{ borderColor: "rgba(255,255,255,0.1)", margin: "16px 0" }} />
+            <div className="row total"><span style={{ fontSize: "1.2rem" }}>Liquid Net Worth:</span> <span className="positive" style={{ fontSize: "1.5rem" }}>{formatCurrency(data.userFinalEquity)}</span></div>
+            
+            <div style={{background: 'rgba(0,0,0,0.2)', padding: '12px', borderRadius: '8px', marginTop: '16px'}}>
+              <div style={{fontWeight: 'bold', marginBottom: '8px'}}>Monthly Cash Flow Reality:</div>
+              <div className="row"><span>Current Monthly Cost:</span> <span className="negative">-{formatCurrency(data.finalMonthlyHouseCost)}/mo</span></div>
+              <div className="row"><span>Total Cumulative Costs Burned:</span> <span className="negative">-{formatCurrency(data.totalHouseCashBurned)}</span></div>
             </div>
-            <hr style={{borderColor: 'rgba(255,255,255,0.1)', margin: '16px 0'}}/>
-            <div className="row"><span>25% Property Value (Year {selectedYear}):</span> <span className="positive">+{formatCurrency(data.finalPropertyVal * userShare)}</span></div>
-            <div className="row"><span>Minus 25% Remaining Loan:</span> <span className="negative">-{formatCurrency(data.remainingLoanTotal * userShare)}</span></div>
-            <div className="row"><span>Minus 25% Seller Fees (6%):</span> <span className="negative">-{formatCurrency(data.finalPropertyVal * sellerClosingCostsPercent * userShare)}</span></div>
-            <div style={{color: '#94a3b8', fontSize: '0.85rem', paddingLeft: '12px'}}>
-              * Captures equity built from mortgage paydown + {appreciation}%/yr appreciation.
-            </div>
-            <hr style={{borderColor: 'rgba(255,255,255,0.1)', margin: '16px 0'}}/>
-            <div className="row total"><span style={{fontSize: '1.2rem'}}>Liquid Net Worth:</span> <span className="positive" style={{fontSize: '1.5rem'}}>{formatCurrency(data.userFinalEquity)}</span></div>
           </div>
         </div>
 
@@ -249,47 +263,25 @@ function OpportunityCostTab({
               : "1px solid rgba(255,255,255,0.08)",
           }}
         >
-          <div
-            className="card-header"
-            style={{ color: !data.pathAWins ? "#4ade80" : "inherit" }}
-          >
+          <div className="card-header" style={{ color: !data.pathAWins ? "#4ade80" : "inherit" }}>
             Path B: Rent & Invest
           </div>
           <div className="card-body">
+            <div className="row"><span>Starting Cash (Day 1):</span> <span className="positive">+{formatCurrency(data.totalInitialSunkUser)}</span></div>
             <div className="row">
-              <span>Initial Cash Invested:</span>{" "}
-              <span className="positive">
-                +{formatCurrency(data.totalInitialSunkUser)}
+              <span>{data.totalPortfolioContributions >= 0 ? 'Plus' : 'Minus'} Net Monthly Deposits:</span> 
+              <span className={data.totalPortfolioContributions >= 0 ? "positive" : "negative"}>
+                {data.totalPortfolioContributions >= 0 ? '+' : ''}{formatCurrency(data.totalPortfolioContributions)}
               </span>
             </div>
-            <div className="row">
-              <span>Total Rent Burned:</span>{" "}
-              <span className="negative">
-                -{formatCurrency(data.totalRentCashBurned)}
-              </span>
-            </div>
-            <hr
-              style={{ borderColor: "rgba(255,255,255,0.1)", margin: "16px 0" }}
-            />
-            <div
-              style={{
-                color: "#94a3b8",
-                fontSize: "0.9rem",
-                marginBottom: "16px",
-              }}
-            >
-              * This portfolio assumes you took your initial down payment, plus
-              any monthly cash flow difference between buying and renting, and
-              invested it all into the market at {stockMarketReturn}% annually.
-            </div>
-            <hr
-              style={{ borderColor: "rgba(255,255,255,0.1)", margin: "16px 0" }}
-            />
-            <div className="row total">
-              <span style={{ fontSize: "1.2rem" }}>Liquid Net Worth:</span>{" "}
-              <span className="positive" style={{ fontSize: "1.5rem" }}>
-                {formatCurrency(data.stockPortfolio)}
-              </span>
+            <div className="row"><span>Plus Stock Market Gains:</span> <span className="positive">+{formatCurrency(data.totalMarketGains)}</span></div>
+            <hr style={{ borderColor: "rgba(255,255,255,0.1)", margin: "16px 0" }} />
+            <div className="row total"><span style={{ fontSize: "1.2rem" }}>Liquid Net Worth:</span> <span className="positive" style={{ fontSize: "1.5rem" }}>{formatCurrency(data.stockPortfolio)}</span></div>
+
+            <div style={{background: 'rgba(0,0,0,0.2)', padding: '12px', borderRadius: '8px', marginTop: '16px'}}>
+              <div style={{fontWeight: 'bold', marginBottom: '8px'}}>Monthly Cash Flow Reality:</div>
+              <div className="row"><span>Current Monthly Rent:</span> <span className="negative">-{formatCurrency(data.finalMonthlyRentCost)}/mo</span></div>
+              <div className="row"><span>Total Cumulative Rent Burned:</span> <span className="negative">-{formatCurrency(data.totalRentCashBurned)}</span></div>
             </div>
           </div>
         </div>
