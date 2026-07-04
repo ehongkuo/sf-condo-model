@@ -22,7 +22,7 @@ function App() {
   const [userRent, setUserRent] = useState(3200);
   const [brotherRent, setBrotherRent] = useState(3000);
   const [isRental, setIsRental] = useState(false);
-  const [tenantRent, setTenantRent] = useState(4000);
+  const [tenantRent, setTenantRent] = useState(6500);
   const [includeTaxSavings, setIncludeTaxSavings] = useState(true);
   const [selectedYear, setSelectedYear] = useState(1);
 
