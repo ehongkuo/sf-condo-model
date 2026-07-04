@@ -80,15 +80,13 @@ function OpportunityCostTab({
     }
 
     // --- FINAL PAYDAY FOR BUYING ---
-    const finalPropertyVal =
-      purchasePrice * Math.pow(1 + appreciation / 100, selectedYear);
-
-    // Find remaining loan balance
-    const monthIndex = Math.min(selectedYear * 12 - 1, 359);
-    const remainingLoanTotal =
-      amortizationSchedule.length > 0
-        ? amortizationSchedule[monthIndex].balance
-        : loanAmount;
+    const finalPropertyVal = purchasePrice * Math.pow(1 + appreciation / 100, selectedYear);
+    
+    // Find remaining loan balance (amortizationSchedule is an array of 30 years)
+    const yearIndex = Math.min(selectedYear - 1, 29);
+    const remainingLoanTotal = (amortizationSchedule.length > 0 && amortizationSchedule[yearIndex]) 
+      ? amortizationSchedule[yearIndex].balance 
+      : loanAmount;
 
     const grossEquityTotal = finalPropertyVal - remainingLoanTotal;
     const sellerClosingCostsTotal =
@@ -110,6 +108,7 @@ function OpportunityCostTab({
       totalRentCashBurned,
       pathAWins,
       delta,
+      remainingLoanTotal
     };
   }, [
     purchasePrice,
@@ -225,45 +224,20 @@ function OpportunityCostTab({
             Path A: Buy the Condo
           </div>
           <div className="card-body">
-            <div className="row">
-              <span>Initial Cash Sunk:</span>{" "}
-              <span className="negative">
-                -{formatCurrency(data.totalInitialSunkUser)}
-              </span>
+            <div className="row"><span>Initial Cash Sunk:</span> <span className="negative">-{formatCurrency(data.totalInitialSunkUser)}</span></div>
+            <div className="row"><span>Total Monthly Costs Burned:</span> <span className="negative">-{formatCurrency(data.totalHouseCashBurned)}</span></div>
+            <div style={{color: '#94a3b8', fontSize: '0.85rem', paddingLeft: '12px', marginBottom: '8px'}}>
+              * Accounts for HOA growing at {hoaInflation}%/yr and Property Taxes growing at 2%/yr.
             </div>
-            <div className="row">
-              <span>Total Monthly Costs Burned:</span>{" "}
-              <span className="negative">
-                -{formatCurrency(data.totalHouseCashBurned)}
-              </span>
+            <hr style={{borderColor: 'rgba(255,255,255,0.1)', margin: '16px 0'}}/>
+            <div className="row"><span>25% Property Value (Year {selectedYear}):</span> <span className="positive">+{formatCurrency(data.finalPropertyVal * userShare)}</span></div>
+            <div className="row"><span>Minus 25% Remaining Loan:</span> <span className="negative">-{formatCurrency(data.remainingLoanTotal * userShare)}</span></div>
+            <div className="row"><span>Minus 25% Seller Fees (6%):</span> <span className="negative">-{formatCurrency(data.finalPropertyVal * sellerClosingCostsPercent * userShare)}</span></div>
+            <div style={{color: '#94a3b8', fontSize: '0.85rem', paddingLeft: '12px'}}>
+              * Captures equity built from mortgage paydown + {appreciation}%/yr appreciation.
             </div>
-            <hr
-              style={{ borderColor: "rgba(255,255,255,0.1)", margin: "16px 0" }}
-            />
-            <div className="row">
-              <span>25% House Value (Year {selectedYear}):</span>{" "}
-              <span className="positive">
-                +{formatCurrency(data.finalPropertyVal * userShare)}
-              </span>
-            </div>
-            <div className="row">
-              <span>Minus 25% Loan / Closing Costs:</span>{" "}
-              <span className="negative">
-                -
-                {formatCurrency(
-                  data.finalPropertyVal * userShare - data.userFinalEquity,
-                )}
-              </span>
-            </div>
-            <hr
-              style={{ borderColor: "rgba(255,255,255,0.1)", margin: "16px 0" }}
-            />
-            <div className="row total">
-              <span style={{ fontSize: "1.2rem" }}>Liquid Net Worth:</span>{" "}
-              <span className="positive" style={{ fontSize: "1.5rem" }}>
-                {formatCurrency(data.userFinalEquity)}
-              </span>
-            </div>
+            <hr style={{borderColor: 'rgba(255,255,255,0.1)', margin: '16px 0'}}/>
+            <div className="row total"><span style={{fontSize: '1.2rem'}}>Liquid Net Worth:</span> <span className="positive" style={{fontSize: '1.5rem'}}>{formatCurrency(data.userFinalEquity)}</span></div>
           </div>
         </div>
 
