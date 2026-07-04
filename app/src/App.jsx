@@ -6,11 +6,13 @@ import {
   Calculator,
   TrendingUp,
   Clock,
+  Scale,
 } from "lucide-react";
 import CashFlowTab from "./CashFlowTab";
 import LoanTab from "./LoanTab";
 import TaxTab from "./TaxTab";
 import LongTermTab from "./LongTermTab";
+import OpportunityCostTab from "./OpportunityCostTab";
 import { formatCurrency } from "./utils";
 
 function App() {
@@ -522,6 +524,12 @@ function App() {
         >
           <TrendingUp size={18} /> Long-Term ROI
         </button>
+        <button
+          className={`nav-btn ${activeTab === "oppcost" ? "active" : ""}`}
+          onClick={() => setActiveTab("oppcost")}
+        >
+          <Scale size={18} /> Buy vs Rent
+        </button>
       </div>
 
       <main className="main-content">
@@ -611,6 +619,22 @@ function App() {
             hoaInflation={hoaInflation}
             appreciation={appreciation}
             moveOutYear={moveOutYear}
+          />
+        )}
+
+        {activeTab === "oppcost" && (
+          <OpportunityCostTab
+            purchasePrice={purchasePrice}
+            loanAmount={loanAmount}
+            mortgage={mortgage}
+            baseHOA={baseHOA}
+            basePropertyTaxAnnual={basePropertyTaxAnnual}
+            hoaInflation={hoaInflation}
+            appreciation={appreciation}
+            userRent={userRent}
+            totalRent={totalRent}
+            selectedYear={selectedYear}
+            amortizationSchedule={amortizationSchedule}
           />
         )}
       </main>
