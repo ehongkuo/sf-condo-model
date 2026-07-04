@@ -13,6 +13,7 @@ function OpportunityCostTab({
   totalRent, // total monthly rent pot
   selectedYear,
   amortizationSchedule,
+  userTaxShield,
 }) {
   const [stockMarketReturn, setStockMarketReturn] = useState(7.0);
   const [equivalentRent, setEquivalentRent] = useState(1500);
@@ -59,8 +60,10 @@ function OpportunityCostTab({
 
       // User's net cash flow for buying (cash out of pocket)
       // They pay userShareOfCosts + their userRent, but they get back 25% of the totalRent pot
+      // They also get a tax shield which reduces their out of pocket cost
       const userRentIncome = totalRent * userShare;
-      const userNetCostThisMonth = userShareOfCosts + userRent - userRentIncome;
+      const userNetCostThisMonth =
+        userShareOfCosts + userRent - userRentIncome - userTaxShield;
 
       totalHouseCashBurned += userNetCostThisMonth;
 
@@ -89,16 +92,19 @@ function OpportunityCostTab({
       }
     }
 
-    const totalMarketGains = stockPortfolio - totalInitialSunkUser - totalPortfolioContributions;
+    const totalMarketGains =
+      stockPortfolio - totalInitialSunkUser - totalPortfolioContributions;
 
     // --- FINAL PAYDAY FOR BUYING ---
-    const finalPropertyVal = purchasePrice * Math.pow(1 + appreciation / 100, selectedYear);
-    
+    const finalPropertyVal =
+      purchasePrice * Math.pow(1 + appreciation / 100, selectedYear);
+
     // Find remaining loan balance (amortizationSchedule is an array of 30 years)
     const yearIndex = Math.min(selectedYear - 1, 29);
-    const remainingLoanTotal = (amortizationSchedule.length > 0 && amortizationSchedule[yearIndex]) 
-      ? amortizationSchedule[yearIndex].balance 
-      : loanAmount;
+    const remainingLoanTotal =
+      amortizationSchedule.length > 0 && amortizationSchedule[yearIndex]
+        ? amortizationSchedule[yearIndex].balance
+        : loanAmount;
 
     const grossEquityTotal = finalPropertyVal - remainingLoanTotal;
     const sellerClosingCostsTotal =
@@ -126,7 +132,7 @@ function OpportunityCostTab({
       initialDownPaymentUser,
       initialClosingCostsUser,
       totalPortfolioContributions,
-      totalMarketGains
+      totalMarketGains,
     };
   }, [
     purchasePrice,
@@ -235,22 +241,97 @@ function OpportunityCostTab({
               : "1px solid rgba(255,255,255,0.08)",
           }}
         >
-          <div className="card-header" style={{ color: data.pathAWins ? "#4ade80" : "inherit" }}>
+          <div
+            className="card-header"
+            style={{ color: data.pathAWins ? "#4ade80" : "inherit" }}
+          >
             Path A: Buy the Condo
           </div>
           <div className="card-body">
-            <div className="row"><span>Starting Cash (Day 1):</span> <span className="positive">+{formatCurrency(data.totalInitialSunkUser)}</span></div>
-            <div className="row"><span>Minus Buyer Closing Costs:</span> <span className="negative">-{formatCurrency(data.initialClosingCostsUser)}</span></div>
-            <div className="row"><span>Plus Principal Paid Down:</span> <span className="positive">+{formatCurrency((loanAmount * userShare) - (data.remainingLoanTotal * userShare))}</span></div>
-            <div className="row"><span>Plus Property Appreciation:</span> <span className="positive">+{formatCurrency((data.finalPropertyVal * userShare) - (purchasePrice * userShare))}</span></div>
-            <div className="row"><span>Minus Seller Fees (6%):</span> <span className="negative">-{formatCurrency(data.finalPropertyVal * sellerClosingCostsPercent * userShare)}</span></div>
-            <hr style={{ borderColor: "rgba(255,255,255,0.1)", margin: "16px 0" }} />
-            <div className="row total"><span style={{ fontSize: "1.2rem" }}>Liquid Net Worth:</span> <span className="positive" style={{ fontSize: "1.5rem" }}>{formatCurrency(data.userFinalEquity)}</span></div>
-            
-            <div style={{background: 'rgba(0,0,0,0.2)', padding: '12px', borderRadius: '8px', marginTop: '16px'}}>
-              <div style={{fontWeight: 'bold', marginBottom: '8px'}}>Monthly Cash Flow Reality:</div>
-              <div className="row"><span>Current Monthly Cost:</span> <span className="negative">-{formatCurrency(data.finalMonthlyHouseCost)}/mo</span></div>
-              <div className="row"><span>Total Cumulative Costs Burned:</span> <span className="negative">-{formatCurrency(data.totalHouseCashBurned)}</span></div>
+            <div className="row">
+              <span>Starting Cash (Day 1):</span>{" "}
+              <span className="positive">
+                +{formatCurrency(data.totalInitialSunkUser)}
+              </span>
+            </div>
+            <div className="row">
+              <span>Minus Buyer Closing Costs:</span>{" "}
+              <span className="negative">
+                -{formatCurrency(data.initialClosingCostsUser)}
+              </span>
+            </div>
+            <div className="row">
+              <span>Plus Principal Paid Down:</span>{" "}
+              <span className="positive">
+                +
+                {formatCurrency(
+                  loanAmount * userShare - data.remainingLoanTotal * userShare,
+                )}
+              </span>
+            </div>
+            <div className="row">
+              <span>Plus Property Appreciation:</span>{" "}
+              <span className="positive">
+                +
+                {formatCurrency(
+                  data.finalPropertyVal * userShare - purchasePrice * userShare,
+                )}
+              </span>
+            </div>
+            <div className="row">
+              <span>Minus Seller Fees (6%):</span>{" "}
+              <span className="negative">
+                -
+                {formatCurrency(
+                  data.finalPropertyVal * sellerClosingCostsPercent * userShare,
+                )}
+              </span>
+            </div>
+            <hr
+              style={{ borderColor: "rgba(255,255,255,0.1)", margin: "16px 0" }}
+            />
+            <div className="row total">
+              <span style={{ fontSize: "1.2rem" }}>Liquid Net Worth:</span>{" "}
+              <span className="positive" style={{ fontSize: "1.5rem" }}>
+                {formatCurrency(data.userFinalEquity)}
+              </span>
+            </div>
+
+            <div
+              style={{
+                background: "rgba(0,0,0,0.2)",
+                padding: "12px",
+                borderRadius: "8px",
+                marginTop: "16px",
+              }}
+            >
+              <div style={{ fontWeight: "bold", marginBottom: "8px" }}>
+                Monthly Cash Flow Reality:
+              </div>
+              <div className="row">
+                <span>Current Monthly Cost:</span>{" "}
+                <span className="negative">
+                  -{formatCurrency(data.finalMonthlyHouseCost)}/mo
+                </span>
+              </div>
+              <div
+                style={{
+                  color: "#94a3b8",
+                  fontSize: "0.85rem",
+                  paddingLeft: "12px",
+                  marginBottom: "8px",
+                  fontStyle: "italic",
+                }}
+              >
+                * This perfectly matches your "Net Flow" in the Cash Flow tab
+                (factoring in your rent, 25% costs, and Tax Savings).
+              </div>
+              <div className="row">
+                <span>Total Cumulative Costs Burned:</span>{" "}
+                <span className="negative">
+                  -{formatCurrency(data.totalHouseCashBurned)}
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -263,25 +344,74 @@ function OpportunityCostTab({
               : "1px solid rgba(255,255,255,0.08)",
           }}
         >
-          <div className="card-header" style={{ color: !data.pathAWins ? "#4ade80" : "inherit" }}>
+          <div
+            className="card-header"
+            style={{ color: !data.pathAWins ? "#4ade80" : "inherit" }}
+          >
             Path B: Rent & Invest
           </div>
           <div className="card-body">
-            <div className="row"><span>Starting Cash (Day 1):</span> <span className="positive">+{formatCurrency(data.totalInitialSunkUser)}</span></div>
             <div className="row">
-              <span>{data.totalPortfolioContributions >= 0 ? 'Plus' : 'Minus'} Net Monthly Deposits:</span> 
-              <span className={data.totalPortfolioContributions >= 0 ? "positive" : "negative"}>
-                {data.totalPortfolioContributions >= 0 ? '+' : ''}{formatCurrency(data.totalPortfolioContributions)}
+              <span>Starting Cash (Day 1):</span>{" "}
+              <span className="positive">
+                +{formatCurrency(data.totalInitialSunkUser)}
               </span>
             </div>
-            <div className="row"><span>Plus Stock Market Gains:</span> <span className="positive">+{formatCurrency(data.totalMarketGains)}</span></div>
-            <hr style={{ borderColor: "rgba(255,255,255,0.1)", margin: "16px 0" }} />
-            <div className="row total"><span style={{ fontSize: "1.2rem" }}>Liquid Net Worth:</span> <span className="positive" style={{ fontSize: "1.5rem" }}>{formatCurrency(data.stockPortfolio)}</span></div>
+            <div className="row">
+              <span>
+                {data.totalPortfolioContributions >= 0 ? "Plus" : "Minus"} Net
+                Monthly Deposits:
+              </span>
+              <span
+                className={
+                  data.totalPortfolioContributions >= 0
+                    ? "positive"
+                    : "negative"
+                }
+              >
+                {data.totalPortfolioContributions >= 0 ? "+" : ""}
+                {formatCurrency(data.totalPortfolioContributions)}
+              </span>
+            </div>
+            <div className="row">
+              <span>Plus Stock Market Gains:</span>{" "}
+              <span className="positive">
+                +{formatCurrency(data.totalMarketGains)}
+              </span>
+            </div>
+            <hr
+              style={{ borderColor: "rgba(255,255,255,0.1)", margin: "16px 0" }}
+            />
+            <div className="row total">
+              <span style={{ fontSize: "1.2rem" }}>Liquid Net Worth:</span>{" "}
+              <span className="positive" style={{ fontSize: "1.5rem" }}>
+                {formatCurrency(data.stockPortfolio)}
+              </span>
+            </div>
 
-            <div style={{background: 'rgba(0,0,0,0.2)', padding: '12px', borderRadius: '8px', marginTop: '16px'}}>
-              <div style={{fontWeight: 'bold', marginBottom: '8px'}}>Monthly Cash Flow Reality:</div>
-              <div className="row"><span>Current Monthly Rent:</span> <span className="negative">-{formatCurrency(data.finalMonthlyRentCost)}/mo</span></div>
-              <div className="row"><span>Total Cumulative Rent Burned:</span> <span className="negative">-{formatCurrency(data.totalRentCashBurned)}</span></div>
+            <div
+              style={{
+                background: "rgba(0,0,0,0.2)",
+                padding: "12px",
+                borderRadius: "8px",
+                marginTop: "16px",
+              }}
+            >
+              <div style={{ fontWeight: "bold", marginBottom: "8px" }}>
+                Monthly Cash Flow Reality:
+              </div>
+              <div className="row">
+                <span>Current Monthly Rent:</span>{" "}
+                <span className="negative">
+                  -{formatCurrency(data.finalMonthlyRentCost)}/mo
+                </span>
+              </div>
+              <div className="row">
+                <span>Total Cumulative Rent Burned:</span>{" "}
+                <span className="negative">
+                  -{formatCurrency(data.totalRentCashBurned)}
+                </span>
+              </div>
             </div>
           </div>
         </div>

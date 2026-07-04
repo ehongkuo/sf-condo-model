@@ -542,6 +542,7 @@ function App() {
             setBrotherRent={setBrotherRent}
             tenantRent={tenantRent}
             setTenantRent={setTenantRent}
+            includeTaxSavings={includeTaxSavings}
             totalRent={totalRent}
             dadExpenses={dadExpenses}
             dadRentIncome={dadRentIncome}
@@ -635,6 +636,7 @@ function App() {
             totalRent={totalRent}
             selectedYear={selectedYear}
             amortizationSchedule={amortizationSchedule}
+            userTaxShield={appliedTaxShield}
           />
         )}
       </main>
