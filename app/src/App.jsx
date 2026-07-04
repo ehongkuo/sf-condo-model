@@ -19,8 +19,8 @@ function App() {
   const [activeTab, setActiveTab] = useState("cashflow");
 
   // Shared state
-  const [userRent, setUserRent] = useState(2500);
-  const [brotherRent, setBrotherRent] = useState(1500);
+  const [userRent, setUserRent] = useState(3200);
+  const [brotherRent, setBrotherRent] = useState(3000);
   const [isRental, setIsRental] = useState(false);
   const [tenantRent, setTenantRent] = useState(4000);
   const [includeTaxSavings, setIncludeTaxSavings] = useState(true);

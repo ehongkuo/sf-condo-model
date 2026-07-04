@@ -16,7 +16,7 @@ function OpportunityCostTab({
   userTaxShield,
 }) {
   const [stockMarketReturn, setStockMarketReturn] = useState(7.0);
-  const [equivalentRent, setEquivalentRent] = useState(1500);
+  const [equivalentRent, setEquivalentRent] = useState(3300);
   const [rentInflation, setRentInflation] = useState(3.0);
 
   // Constants
