@@ -37,6 +37,7 @@ function TaxTab({
   monthlyRentalTaxCost,
   cumulativeTaxSavings,
   llcShare,
+  userShareOfRentIncome,
 }) {
   if (isRental) {
     const annualTaxSavingsFromLoss =
@@ -240,10 +241,13 @@ function TaxTab({
                   marginBottom: "12px",
                 }}
               >
-                Income (your 33.3% of rent)
+                Income (your {(userShareOfRentIncome * 100).toFixed(0)}% of
+                rent)
               </div>
               <div className="row">
-                <span>33.3% of Tenant Rent:</span>{" "}
+                <span>
+                  {(userShareOfRentIncome * 100).toFixed(0)}% of Tenant Rent:
+                </span>{" "}
                 <span className="positive">
                   {formatCurrency(rentalIncome)} / yr
                 </span>

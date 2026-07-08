@@ -150,7 +150,8 @@ function App() {
     userShareOfDepreciation +
     userShareOfOperatingExpenses;
 
-  const rentalIncome = totalRent * 12 * llcShare;
+  const userShareOfRentIncome = 0.25; // Dad gets 50%, Brothers get 25% each
+  const rentalIncome = totalRent * 12 * userShareOfRentIncome;
   const netRentalIncome = rentalIncome - totalRentalDeductions;
 
   // LLC + REPS: losses are NON-PASSIVE and offset W-2 income
@@ -179,7 +180,7 @@ function App() {
         yHOA +
         userShareOfDepreciation +
         userShareOfOperatingExpenses;
-      const yIncome = totalRent * 12 * llcShare;
+      const yIncome = totalRent * 12 * userShareOfRentIncome;
       const yNet = yIncome - yDeductions;
 
       if (yNet < 0) {
@@ -196,6 +197,7 @@ function App() {
     userShareOfDepreciation,
     userShareOfOperatingExpenses,
     totalRent,
+    userShareOfRentIncome,
   ]);
 
   // The actual applied tax shield (added to net cash flow)
@@ -652,6 +654,7 @@ function App() {
             monthlyRentalTaxCost={monthlyRentalTaxCost}
             cumulativeTaxSavings={cumulativeTaxSavings}
             llcShare={llcShare}
+            userShareOfRentIncome={userShareOfRentIncome}
           />
         )}
 
