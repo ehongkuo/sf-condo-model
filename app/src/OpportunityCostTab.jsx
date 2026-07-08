@@ -278,6 +278,12 @@ function OpportunityCostTab({
       prevYearStockPortfolio,
       buyCumulativeMarketReturns: buyLiquidCash - (STARTING_CASH - initialDownPaymentUser - initialClosingCostsUser + buyCumulativeSavings),
       rentCumulativeMarketReturns: stockPortfolio - (STARTING_CASH + rentCumulativeSavings),
+      buyDay1Cash: STARTING_CASH - initialDownPaymentUser - initialClosingCostsUser,
+      buyCumulativeProfitOnDay1: (STARTING_CASH - initialDownPaymentUser - initialClosingCostsUser) * (Math.pow(1 + stockMarketReturn / 100, selectedYear) - 1),
+      buyCumulativeProfitOnDeposits: (buyLiquidCash - (STARTING_CASH - initialDownPaymentUser - initialClosingCostsUser + buyCumulativeSavings)) - ((STARTING_CASH - initialDownPaymentUser - initialClosingCostsUser) * (Math.pow(1 + stockMarketReturn / 100, selectedYear) - 1)),
+      rentDay1Cash: STARTING_CASH,
+      rentCumulativeProfitOnDay1: STARTING_CASH * (Math.pow(1 + stockMarketReturn / 100, selectedYear) - 1),
+      rentCumulativeProfitOnDeposits: (stockPortfolio - (STARTING_CASH + rentCumulativeSavings)) - (STARTING_CASH * (Math.pow(1 + stockMarketReturn / 100, selectedYear) - 1)),
       totalHouseCashBurned,
       totalRentCashBurned,
       pathAWins,
@@ -427,7 +433,7 @@ function OpportunityCostTab({
               <div className="row" style={{ fontSize: "0.85rem", color: "#94a3b8", paddingLeft: "16px" }}>
                 <span>Cumulative Market Returns:</span>
                 <span className={data.buyCumulativeMarketReturns >= 0 ? "positive" : "negative"}>
-                  <MathTooltip ledger={`  (Calculated via month-by-month compounding simulation)\n\n  Projected Liquid Cash Account: ${formatCurrency(data.buyLiquidCash)}\n- Day 1 Principal Cash:        -${formatCurrency(data.STARTING_CASH - data.initialDownPaymentUser - data.initialClosingCostsUser)}\n- Total Savings Deposited:     -${formatCurrency(data.buyCumulativeSavings)}\n----------------------------------------\n= Total Market Profit:           ${formatCurrency(data.buyCumulativeMarketReturns)}`}>
+                  <MathTooltip ledger={`  Interest on Day 1 Liquid Cash:\n    ${formatCurrency(data.buyDay1Cash)} compounding at ${stockMarketReturn}% APY for ${selectedYear} years\n  = ${formatCurrency(data.buyCumulativeProfitOnDay1)}\n\n  Interest on Housing Savings Deposits:\n    ${formatCurrency(data.buyCumulativeSavings)} deposited over ${selectedYear * 12} months\n  = ${formatCurrency(data.buyCumulativeProfitOnDeposits)}\n----------------------------------------\n= Cumulative Market Returns: ${formatCurrency(data.buyCumulativeMarketReturns)}`}>
                     {data.buyCumulativeMarketReturns >= 0 ? "+" : ""}{formatCurrency(data.buyCumulativeMarketReturns)}
                   </MathTooltip>
                 </span>
@@ -509,7 +515,7 @@ function OpportunityCostTab({
               <div className="row" style={{ fontSize: "0.9rem", color: "#94a3b8", paddingLeft: "16px", marginTop: "8px" }}>
                 <span>+ Market Returns this year:</span>
                 <span className={data.buyMarketReturnsThisYear >= 0 ? "positive" : "negative"}>
-                  <MathTooltip ledger={`  (Calculated via month-by-month compounding simulation)\n\n  End of Year ${selectedYear} Balance:      ${formatCurrency(data.buyLiquidCash)}\n- Start of Year ${selectedYear} Balance:    -${formatCurrency(data.prevYearBuyLiquidCash)}\n- New Savings Deposited This Year: -${formatCurrency(data.buySavingsThisYear)}\n----------------------------------------\n= Market Returns this year:          ${formatCurrency(data.buyMarketReturnsThisYear)}`}>
+                  <MathTooltip ledger={`  Interest on Start of Year Balance:\n    ${formatCurrency(data.prevYearBuyLiquidCash)} × ${stockMarketReturn}% APY = ${formatCurrency(data.prevYearBuyLiquidCash * (stockMarketReturn / 100))}\n\n  Interest on New Monthly Deposits:\n    ${formatCurrency(data.buySavingsThisYear)} deposited over 12 months = ${formatCurrency(data.buyMarketReturnsThisYear - (data.prevYearBuyLiquidCash * (stockMarketReturn / 100)))}\n----------------------------------------\n= Market Returns this year: ${formatCurrency(data.buyMarketReturnsThisYear)}`}>
                     {data.buyMarketReturnsThisYear >= 0 ? "+" : ""}{formatCurrency(data.buyMarketReturnsThisYear)}
                   </MathTooltip>
                 </span>
@@ -630,10 +636,10 @@ function OpportunityCostTab({
                   {formatCurrency(data.STARTING_CASH)}
                 </span>
               </div>
-              <div className="row" style={{ fontSize: "0.85rem", color: "#94a3b8", paddingLeft: "16px" }}>
+              <div className="row" style={{ fontSize: "0.85rem", color: "#94a3b8", paddingLeft: "16px", marginBottom: "8px" }}>
                 <span>Cumulative Market Returns:</span>
                 <span className={data.rentCumulativeMarketReturns >= 0 ? "positive" : "negative"}>
-                  <MathTooltip ledger={`  (Calculated via month-by-month compounding simulation)\n\n  Projected Liquid Cash Account: ${formatCurrency(data.stockPortfolio)}\n- Day 1 Principal Cash:        -${formatCurrency(data.STARTING_CASH)}\n- Total Savings Deposited:     -${formatCurrency(data.rentCumulativeSavings)}\n----------------------------------------\n= Total Market Profit:           ${formatCurrency(data.rentCumulativeMarketReturns)}`}>
+                  <MathTooltip ledger={`  Interest on Day 1 Liquid Cash:\n    ${formatCurrency(data.rentDay1Cash)} compounding at ${stockMarketReturn}% APY for ${selectedYear} years\n  = ${formatCurrency(data.rentCumulativeProfitOnDay1)}\n\n  Interest on Housing Savings Deposits:\n    ${formatCurrency(data.rentCumulativeSavings)} deposited over ${selectedYear * 12} months\n  = ${formatCurrency(data.rentCumulativeProfitOnDeposits)}\n----------------------------------------\n= Cumulative Market Returns: ${formatCurrency(data.rentCumulativeMarketReturns)}`}>
                     {data.rentCumulativeMarketReturns >= 0 ? "+" : ""}{formatCurrency(data.rentCumulativeMarketReturns)}
                   </MathTooltip>
                 </span>
@@ -683,7 +689,7 @@ function OpportunityCostTab({
               <div className="row" style={{ fontSize: "0.9rem", color: "#94a3b8", paddingLeft: "16px", marginTop: "8px" }}>
                 <span>+ Market Returns this year:</span>
                 <span className={data.rentMarketReturnsThisYear >= 0 ? "positive" : "negative"}>
-                  <MathTooltip ledger={`  (Calculated via month-by-month compounding simulation)\n\n  End of Year ${selectedYear} Balance:      ${formatCurrency(data.stockPortfolio)}\n- Start of Year ${selectedYear} Balance:    -${formatCurrency(data.prevYearStockPortfolio)}\n- New Savings Deposited This Year: -${formatCurrency(data.rentSavingsThisYear)}\n----------------------------------------\n= Market Returns this year:          ${formatCurrency(data.rentMarketReturnsThisYear)}`}>
+                  <MathTooltip ledger={`  Interest on Start of Year Balance:\n    ${formatCurrency(data.prevYearStockPortfolio)} × ${stockMarketReturn}% APY = ${formatCurrency(data.prevYearStockPortfolio * (stockMarketReturn / 100))}\n\n  Interest on New Monthly Deposits:\n    ${formatCurrency(data.rentSavingsThisYear)} deposited over 12 months = ${formatCurrency(data.rentMarketReturnsThisYear - (data.prevYearStockPortfolio * (stockMarketReturn / 100)))}\n----------------------------------------\n= Market Returns this year: ${formatCurrency(data.rentMarketReturnsThisYear)}`}>
                     {data.rentMarketReturnsThisYear >= 0 ? "+" : ""}{formatCurrency(data.rentMarketReturnsThisYear)}
                   </MathTooltip>
                 </span>
