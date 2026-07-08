@@ -6,21 +6,25 @@ import {
   Calculator,
   TrendingUp,
   Clock,
+  Scale,
+  Info,
 } from "lucide-react";
+import { EditableSlider } from "./EditableSlider";
 import CashFlowTab from "./CashFlowTab";
 import LoanTab from "./LoanTab";
 import TaxTab from "./TaxTab";
 import LongTermTab from "./LongTermTab";
+import OpportunityCostTab from "./OpportunityCostTab";
 import { formatCurrency } from "./utils";
 
 function App() {
   const [activeTab, setActiveTab] = useState("cashflow");
 
   // Shared state
-  const [userRent, setUserRent] = useState(2500);
-  const [brotherRent, setBrotherRent] = useState(1500);
+  const [userRent, setUserRent] = useState(3200);
+  const [brotherRent, setBrotherRent] = useState(3000);
   const [isRental, setIsRental] = useState(false);
-  const [tenantRent, setTenantRent] = useState(4000);
+  const [tenantRent, setTenantRent] = useState(6500);
   const [includeTaxSavings, setIncludeTaxSavings] = useState(true);
   const [selectedYear, setSelectedYear] = useState(1);
 
@@ -30,6 +34,7 @@ function App() {
   const [hoaInflation, setHoaInflation] = useState(4.0);
   const [appreciation, setAppreciation] = useState(3.0);
   const [moveOutYear, setMoveOutYear] = useState(5);
+  const [operatingExpenseRate, setOperatingExpenseRate] = useState(0.75);
 
   const totalRent = isRental ? tenantRent : userRent + brotherRent;
 
@@ -125,47 +130,64 @@ function App() {
   const annualTaxSavings = incrementalDeduction * marginalRate;
   const userTaxShieldScheduleA = annualTaxSavings / 12;
 
-  // --- Rental (Schedule E) ---
+  // --- Rental (LLC Partnership — 1/3 split, REPS active losses) ---
+  const llcShare = 1 / 3;
   const buildingRatio = 0.8;
-  const depreciationBasis = purchasePrice * buildingRatio; // Always based on purchase price
+  const depreciationBasis = purchasePrice * buildingRatio;
   const annualDepreciation = depreciationBasis / 27.5;
-  const userShareOfDepreciation = annualDepreciation / 2;
+  const userShareOfDepreciation = annualDepreciation * llcShare;
 
-  const rentalInterest = totalInterestForYear / 2;
-  const rentalPropertyTax = propertyTaxAnnual / 2;
-  const rentalHOA = currentHOAAnnual / 2;
+  const rentalInterest = totalInterestForYear * llcShare;
+  const rentalPropertyTax = propertyTaxAnnual * llcShare;
+  const rentalHOA = currentHOAAnnual * llcShare;
+
+  // Operating expenses as a % of property value (covers cleaning, repairs, travel, insurance)
+  const totalOperatingExpenses = purchasePrice * (operatingExpenseRate / 100);
+  const userShareOfOperatingExpenses = totalOperatingExpenses * llcShare;
+
   const totalRentalDeductions =
-    rentalInterest + rentalPropertyTax + rentalHOA + userShareOfDepreciation;
+    rentalInterest +
+    rentalPropertyTax +
+    rentalHOA +
+    userShareOfDepreciation +
+    userShareOfOperatingExpenses;
 
-  const rentalIncome = (totalRent * 12) / 2;
+  const userShareOfRentIncome = llcShare; // 33.3% split for LLC
+  const rentalIncome = totalRent * 12 * userShareOfRentIncome;
   const netRentalIncome = rentalIncome - totalRentalDeductions;
 
-  // If profit, we owe tax. If loss, it's suspended (no immediate tax benefit, so 0 cost/benefit)
-  const rentalTaxImpact =
-    netRentalIncome >= 0 ? netRentalIncome * marginalRate : 0;
-  const monthlyRentalTaxCost = rentalTaxImpact / 12;
+  // LLC + REPS: losses are NON-PASSIVE and offset W-2 income
+  // If profit, we owe tax. If loss, we GET a tax refund (reduces W-2 taxes).
+  const rentalTaxImpact = netRentalIncome * marginalRate; // positive = owe, negative = savings
+  const monthlyRentalTaxCost = rentalTaxImpact / 12; // positive = cost, negative = savings
 
-  // Calculate cumulative suspended losses up to selectedYear
-  const cumulativeSuspendedLoss = useMemo(() => {
+  // Calculate cumulative tax savings from LLC losses up to selectedYear
+  const cumulativeTaxSavings = useMemo(() => {
     let cumulative = 0;
-    for (let i = 1; i <= selectedYear; i++) {
+    const startYear = moveOutYear + 1;
+    for (let i = startYear; i <= selectedYear; i++) {
       const yearData = amortizationSchedule[i - 1] || { interest: 0 };
-      const yInterest = yearData.interest / 2;
+      const yInterest = yearData.interest * llcShare;
 
       const yPropTaxAnnual =
         basePropertyTaxAnnual * Math.pow(1.02, i > 1 ? i - 1 : 0);
-      const yPropTax = yPropTaxAnnual / 2;
+      const yPropTax = yPropTaxAnnual * llcShare;
 
       const yHOAAnnual =
         baseHOA * 12 * Math.pow(1 + hoaInflation / 100, i > 1 ? i - 1 : 0);
-      const yHOA = yHOAAnnual / 2;
+      const yHOA = yHOAAnnual * llcShare;
 
-      const yDeductions = yInterest + yPropTax + yHOA + userShareOfDepreciation;
-      const yIncome = (totalRent * 12) / 2;
+      const yDeductions =
+        yInterest +
+        yPropTax +
+        yHOA +
+        userShareOfDepreciation +
+        userShareOfOperatingExpenses;
+      const yIncome = totalRent * 12 * userShareOfRentIncome;
       const yNet = yIncome - yDeductions;
 
       if (yNet < 0) {
-        cumulative += Math.abs(yNet);
+        cumulative += Math.abs(yNet) * marginalRate;
       }
     }
     return cumulative;
@@ -176,30 +198,42 @@ function App() {
     baseHOA,
     hoaInflation,
     userShareOfDepreciation,
+    userShareOfOperatingExpenses,
     totalRent,
+    userShareOfRentIncome,
+    moveOutYear,
   ]);
 
   // The actual applied tax shield (added to net cash flow)
-  // Owner: positive savings. Rental: negative cost (if profit), or 0 (if loss).
+  // Owner: positive savings from Schedule A.
+  // Rental LLC: if loss → positive savings (reduces W-2 tax). If profit → negative cost.
   const appliedTaxShield = includeTaxSavings
     ? isRental
-      ? -monthlyRentalTaxCost
+      ? -monthlyRentalTaxCost // negative * negative = positive savings; or negative cost if profit
       : userTaxShieldScheduleA
     : 0;
 
   // 4. Distributions
-  const dadRentIncome = totalRent * 0.5;
-  const dadExpenses = propertyCosts * 0.5;
+  // Owner occupied: Dad 50%, User 25%, Brother 25%
+  // Rental (LLC): Dad 33.3%, User 33.3%, Brother 33.3%
+  const dadRentIncome = isRental ? totalRent * llcShare : totalRent * 0.5;
+  const dadExpenses = isRental
+    ? (propertyCosts + totalOperatingExpenses / 12) * llcShare
+    : propertyCosts * 0.5;
   const dadNet = dadRentIncome - dadExpenses;
 
-  const userRentIncome = totalRent * 0.25;
-  const userExpenses = propertyCosts * 0.25;
+  const userRentIncome = isRental ? totalRent * llcShare : totalRent * 0.25;
+  const userExpenses = isRental
+    ? (propertyCosts + totalOperatingExpenses / 12) * llcShare
+    : propertyCosts * 0.25;
   const userNet = isRental
     ? userRentIncome - userExpenses + appliedTaxShield
     : userRentIncome - userRent - userExpenses + appliedTaxShield;
 
-  const brotherRentIncome = totalRent * 0.25;
-  const brotherExpenses = propertyCosts * 0.25;
+  const brotherRentIncome = isRental ? totalRent * llcShare : totalRent * 0.25;
+  const brotherExpenses = isRental
+    ? (propertyCosts + totalOperatingExpenses / 12) * llcShare
+    : propertyCosts * 0.25;
   const brotherNet = isRental
     ? brotherRentIncome - brotherExpenses + appliedTaxShield
     : brotherRentIncome - brotherRent - brotherExpenses + appliedTaxShield;
@@ -259,18 +293,18 @@ function App() {
                 }}
               >
                 <span style={{ fontWeight: "bold", color: "#f8fafc" }}>
-                  Projection Year: {selectedYear}
+                  Projection Year Showdown
                 </span>
               </div>
-              <input
-                type="range"
-                min="1"
-                max="30"
-                step="1"
+              <EditableSlider
+                label=""
                 value={selectedYear}
-                onChange={(e) => setSelectedYear(Number(e.target.value))}
+                setValue={setSelectedYear}
+                min={1}
+                max={30}
+                step={1}
+                format="years"
                 className="slider blue-slider"
-                style={{ width: "100%", margin: 0 }}
               />
             </div>
           </div>
@@ -344,154 +378,97 @@ function App() {
 
         {/* Bottom Row: Global Sliders */}
         <div style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
-          <div className="slider-group" style={{ flex: 1, minWidth: "150px" }}>
-            <label style={{ fontSize: "0.8rem" }}>Purchase Price</label>
-            <input
-              type="range"
-              min="800000"
-              max="3000000"
-              step="10000"
-              value={purchasePrice}
-              onChange={(e) => setPurchasePrice(Number(e.target.value))}
-              className="slider"
-              style={{ width: "100%" }}
+          <EditableSlider
+            label="Purchase Price"
+            value={purchasePrice}
+            setValue={setPurchasePrice}
+            min={100000}
+            max={1500000}
+            step={10000}
+            format="currency"
+          />
+          <EditableSlider
+            label="Interest Rate"
+            value={interestRate}
+            setValue={setInterestRate}
+            min={0.0}
+            max={10.0}
+            step={0.125}
+            format="percentage"
+          />
+          <EditableSlider
+            label="HOA Inflation"
+            value={hoaInflation}
+            setValue={setHoaInflation}
+            min={2}
+            max={10}
+            step={0.5}
+            format="percentage"
+            className="slider purple-slider"
+          />
+          <EditableSlider
+            label="Appreciation"
+            value={appreciation}
+            setValue={setAppreciation}
+            min={-5}
+            max={15}
+            step={0.5}
+            format="percentage"
+            className="slider blue-slider"
+          />
+          {isRental && (
+            <EditableSlider
+              label="OpEx (% of Value/Yr)"
+              value={operatingExpenseRate}
+              setValue={setOperatingExpenseRate}
+              min={0.1}
+              max={3.0}
+              step={0.05}
+              format="percentage"
+              className="slider red-slider"
             />
-            <div className="rent-value" style={{ fontSize: "0.9rem" }}>
-              {formatCurrency(purchasePrice)}
-            </div>
-          </div>
-          <div className="slider-group" style={{ flex: 1, minWidth: "150px" }}>
-            <label style={{ fontSize: "0.8rem" }}>Interest Rate</label>
-            <input
-              type="range"
-              min="0.0"
-              max="10.0"
-              step="0.125"
-              value={interestRate}
-              onChange={(e) => setInterestRate(Number(e.target.value))}
-              className="slider"
-              style={{ width: "100%" }}
-            />
-            <div className="rent-value" style={{ fontSize: "0.9rem" }}>
-              {interestRate.toFixed(3)}%
-            </div>
-          </div>
-          <div className="slider-group" style={{ flex: 1, minWidth: "150px" }}>
-            <label style={{ fontSize: "0.8rem" }}>HOA Inflation</label>
-            <input
-              type="range"
-              min="2"
-              max="10"
-              step="0.5"
-              value={hoaInflation}
-              onChange={(e) => setHoaInflation(Number(e.target.value))}
-              className="slider purple-slider"
-              style={{ width: "100%" }}
-            />
-            <div className="rent-value" style={{ fontSize: "0.9rem" }}>
-              {hoaInflation.toFixed(1)}%
-            </div>
-          </div>
-          <div className="slider-group" style={{ flex: 1, minWidth: "150px" }}>
-            <label style={{ fontSize: "0.8rem" }}>Appreciation</label>
-            <input
-              type="range"
-              min="-5"
-              max="15"
-              step="0.5"
-              value={appreciation}
-              onChange={(e) => setAppreciation(Number(e.target.value))}
-              className="slider blue-slider"
-              style={{ width: "100%" }}
-            />
-            <div className="rent-value" style={{ fontSize: "0.9rem" }}>
-              {appreciation.toFixed(1)}%
-            </div>
-          </div>
-          <div className="slider-group" style={{ flex: 1, minWidth: "150px" }}>
-            <label style={{ fontSize: "0.8rem" }}>Move-Out Year</label>
-            <input
-              type="range"
-              min="2"
-              max="10"
-              step="1"
-              value={moveOutYear}
-              onChange={(e) => setMoveOutYear(Number(e.target.value))}
-              className="slider"
-              style={{
-                width: "100%",
-                background: "linear-gradient(90deg, #4ade80, #f87171)",
-              }}
-            />
-            <div className="rent-value" style={{ fontSize: "0.9rem" }}>
-              Year {moveOutYear}
-            </div>
-          </div>
+          )}
+          <EditableSlider
+            label="Move-Out Year"
+            value={moveOutYear}
+            setValue={setMoveOutYear}
+            min={2}
+            max={10}
+            step={1}
+            format="years"
+          />
           {isRental ? (
-            <div
-              className="slider-group"
-              style={{ flex: 1, minWidth: "150px" }}
-            >
-              <label style={{ fontSize: "0.8rem" }}>
-                Tenant Rent (Monthly)
-              </label>
-              <input
-                type="range"
-                min="0"
-                max="15000"
-                step="100"
-                value={tenantRent}
-                onChange={(e) => setTenantRent(Number(e.target.value))}
-                className="slider"
-                style={{
-                  width: "100%",
-                  background: "linear-gradient(90deg, #60a5fa, #a855f7)",
-                }}
-              />
-              <div className="rent-value" style={{ fontSize: "0.9rem" }}>
-                {formatCurrency(tenantRent)}
-              </div>
-            </div>
+            <EditableSlider
+              label="Tenant Rent (Monthly)"
+              value={tenantRent}
+              setValue={setTenantRent}
+              min={0}
+              max={15000}
+              step={100}
+              format="currency/mo"
+            />
           ) : (
             <>
-              <div
-                className="slider-group"
-                style={{ flex: 1, minWidth: "150px" }}
-              >
-                <label style={{ fontSize: "0.8rem" }}>Your Rent</label>
-                <input
-                  type="range"
-                  min="0"
-                  max="10000"
-                  step="100"
-                  value={userRent}
-                  onChange={(e) => setUserRent(Number(e.target.value))}
-                  className="slider blue-slider"
-                  style={{ width: "100%" }}
-                />
-                <div className="rent-value" style={{ fontSize: "0.9rem" }}>
-                  {formatCurrency(userRent)}
-                </div>
-              </div>
-              <div
-                className="slider-group"
-                style={{ flex: 1, minWidth: "150px" }}
-              >
-                <label style={{ fontSize: "0.8rem" }}>Brother's Rent</label>
-                <input
-                  type="range"
-                  min="0"
-                  max="10000"
-                  step="100"
-                  value={brotherRent}
-                  onChange={(e) => setBrotherRent(Number(e.target.value))}
-                  className="slider purple-slider"
-                  style={{ width: "100%" }}
-                />
-                <div className="rent-value" style={{ fontSize: "0.9rem" }}>
-                  {formatCurrency(brotherRent)}
-                </div>
-              </div>
+              <EditableSlider
+                label="Your Rent"
+                value={userRent}
+                setValue={setUserRent}
+                min={0}
+                max={10000}
+                step={100}
+                format="currency/mo"
+                className="slider blue-slider"
+              />
+              <EditableSlider
+                label="Brother's Rent"
+                value={brotherRent}
+                setValue={setBrotherRent}
+                min={0}
+                max={10000}
+                step={100}
+                format="currency/mo"
+                className="slider purple-slider"
+              />
             </>
           )}
         </div>
@@ -522,6 +499,12 @@ function App() {
         >
           <TrendingUp size={18} /> Long-Term ROI
         </button>
+        <button
+          className={`nav-btn ${activeTab === "oppcost" ? "active" : ""}`}
+          onClick={() => setActiveTab("oppcost")}
+        >
+          <Scale size={18} /> Buy vs Rent
+        </button>
       </div>
 
       <main className="main-content">
@@ -534,6 +517,7 @@ function App() {
             setBrotherRent={setBrotherRent}
             tenantRent={tenantRent}
             setTenantRent={setTenantRent}
+            includeTaxSavings={includeTaxSavings}
             totalRent={totalRent}
             dadExpenses={dadExpenses}
             dadRentIncome={dadRentIncome}
@@ -549,6 +533,7 @@ function App() {
             mortgage={mortgage}
             propertyTax={propertyTax}
             hoa={hoa}
+            totalOperatingExpenses={totalOperatingExpenses}
             selectedYear={selectedYear}
           />
         )}
@@ -586,18 +571,23 @@ function App() {
             annualTaxSavings={annualTaxSavings}
             userTaxShield={userTaxShieldScheduleA}
 
-            // Rental props passed down from App
+            // Rental LLC props passed down from App
             purchasePrice={purchasePrice}
             rentalInterest={rentalInterest}
             rentalPropertyTax={rentalPropertyTax}
             rentalHOA={rentalHOA}
             userShareOfDepreciation={userShareOfDepreciation}
+            userShareOfOperatingExpenses={userShareOfOperatingExpenses}
+            totalOperatingExpenses={totalOperatingExpenses}
+            operatingExpenseRate={operatingExpenseRate}
             totalRentalDeductions={totalRentalDeductions}
             rentalIncome={rentalIncome}
             netRentalIncome={netRentalIncome}
             rentalTaxImpact={rentalTaxImpact}
             monthlyRentalTaxCost={monthlyRentalTaxCost}
-            cumulativeSuspendedLoss={cumulativeSuspendedLoss}
+            cumulativeTaxSavings={cumulativeTaxSavings}
+            llcShare={llcShare}
+            userShareOfRentIncome={userShareOfRentIncome}
           />
         )}
 
@@ -611,6 +601,25 @@ function App() {
             hoaInflation={hoaInflation}
             appreciation={appreciation}
             moveOutYear={moveOutYear}
+          />
+        )}
+
+        {activeTab === "oppcost" && (
+          <OpportunityCostTab
+            purchasePrice={purchasePrice}
+            loanAmount={loanAmount}
+            mortgage={mortgage}
+            baseHOA={baseHOA}
+            basePropertyTaxAnnual={basePropertyTaxAnnual}
+            hoaInflation={hoaInflation}
+            appreciation={appreciation}
+            userRent={userRent}
+            brotherRent={brotherRent}
+            tenantRent={tenantRent}
+            operatingExpenseRate={operatingExpenseRate}
+            moveOutYear={moveOutYear}
+            selectedYear={selectedYear}
+            amortizationSchedule={amortizationSchedule}
           />
         )}
       </main>
