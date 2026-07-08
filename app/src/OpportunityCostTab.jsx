@@ -201,7 +201,8 @@ function OpportunityCostTab({
         prevYearCumulativeSavingsRent = rentCumulativeSavings;
         
         // Calculate previous year net worths
-        const prevYearGrossEquityTotal = finalPropertyVal - remainingBalance;
+        const prevYearPropertyVal = purchasePrice * Math.pow(1 + appreciation / 100, selectedYear - 1);
+        const prevYearGrossEquityTotal = prevYearPropertyVal - remainingBalance;
         prevYearNetWorthBuy = buyLiquidCash + (prevYearGrossEquityTotal * userEquityShare);
         prevYearNetWorthRent = stockPortfolio;
       }
