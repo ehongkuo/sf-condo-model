@@ -241,12 +241,12 @@ function TaxTab({
                   marginBottom: "12px",
                 }}
               >
-                Income (your {(userShareOfRentIncome * 100).toFixed(0)}% of
+                Income (your {(userShareOfRentIncome * 100).toFixed(1)}% of
                 rent)
               </div>
               <div className="row">
                 <span>
-                  {(userShareOfRentIncome * 100).toFixed(0)}% of Tenant Rent:
+                  {(userShareOfRentIncome * 100).toFixed(1)}% of Tenant Rent:
                 </span>{" "}
                 <span className="positive">
                   {formatCurrency(rentalIncome)} / yr

@@ -150,7 +150,7 @@ function App() {
     userShareOfDepreciation +
     userShareOfOperatingExpenses;
 
-  const userShareOfRentIncome = 0.25; // Dad gets 50%, Brothers get 25% each
+  const userShareOfRentIncome = llcShare; // 33.3% split for LLC
   const rentalIncome = totalRent * 12 * userShareOfRentIncome;
   const netRentalIncome = rentalIncome - totalRentalDeductions;
 
@@ -210,18 +210,26 @@ function App() {
     : 0;
 
   // 4. Distributions
-  const dadRentIncome = totalRent * 0.5;
-  const dadExpenses = propertyCosts * 0.5;
+  // Owner occupied: Dad 50%, User 25%, Brother 25%
+  // Rental (LLC): Dad 33.3%, User 33.3%, Brother 33.3%
+  const dadRentIncome = isRental ? totalRent * llcShare : totalRent * 0.5;
+  const dadExpenses = isRental
+    ? (propertyCosts + totalOperatingExpenses / 12) * llcShare
+    : propertyCosts * 0.5;
   const dadNet = dadRentIncome - dadExpenses;
 
-  const userRentIncome = totalRent * 0.25;
-  const userExpenses = propertyCosts * 0.25;
+  const userRentIncome = isRental ? totalRent * llcShare : totalRent * 0.25;
+  const userExpenses = isRental
+    ? (propertyCosts + totalOperatingExpenses / 12) * llcShare
+    : propertyCosts * 0.25;
   const userNet = isRental
     ? userRentIncome - userExpenses + appliedTaxShield
     : userRentIncome - userRent - userExpenses + appliedTaxShield;
 
-  const brotherRentIncome = totalRent * 0.25;
-  const brotherExpenses = propertyCosts * 0.25;
+  const brotherRentIncome = isRental ? totalRent * llcShare : totalRent * 0.25;
+  const brotherExpenses = isRental
+    ? (propertyCosts + totalOperatingExpenses / 12) * llcShare
+    : propertyCosts * 0.25;
   const brotherNet = isRental
     ? brotherRentIncome - brotherExpenses + appliedTaxShield
     : brotherRentIncome - brotherRent - brotherExpenses + appliedTaxShield;
@@ -601,6 +609,7 @@ function App() {
             mortgage={mortgage}
             propertyTax={propertyTax}
             hoa={hoa}
+            totalOperatingExpenses={totalOperatingExpenses}
             selectedYear={selectedYear}
           />
         )}

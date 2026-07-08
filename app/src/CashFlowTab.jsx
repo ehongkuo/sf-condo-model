@@ -28,8 +28,19 @@ function CashFlowTab({
   mortgage,
   propertyTax,
   hoa,
+  totalOperatingExpenses,
   selectedYear,
 }) {
+  const dadShare = isRental ? 1 / 3 : 0.5;
+  const userShare = isRental ? 1 / 3 : 0.25;
+  const brotherShare = isRental ? 1 / 3 : 0.25;
+
+  const dadLabel = isRental ? "33.3%" : "50%";
+  const userLabel = isRental ? "33.3%" : "25%";
+  const brotherLabel = isRental ? "33.3%" : "25%";
+
+  const opExMonthly = (totalOperatingExpenses || 0) / 12;
+
   // Gift tax check: Dad's net annual gift
   const dadNetAnnualGift = (dadExpenses - dadRentIncome) * 12;
   const marriedGiftLimit = 76000;
@@ -59,18 +70,12 @@ function CashFlowTab({
         >
           <Info
             color="#fb923c"
-            size={24}
+            size={28}
             style={{ flexShrink: 0, marginTop: "2px" }}
           />
           <div>
-            <h3
-              style={{
-                color: "#fb923c",
-                margin: "0 0 6px 0",
-                fontSize: "1rem",
-              }}
-            >
-              ⚠️ Gift Tax Alert
+            <h3 style={{ color: "#fb923c", margin: "0 0 8px 0" }}>
+              Gift Tax Warning
             </h3>
             <p
               style={{
@@ -101,7 +106,9 @@ function CashFlowTab({
               className="row"
               style={{ marginBottom: "4px", fontWeight: "bold" }}
             >
-              <span>50% Property Costs:</span>{" "}
+              <span>
+                {dadLabel} Property Costs{isRental ? " + OpEx" : ""}:
+              </span>{" "}
               <span className="negative">-{formatCurrency(dadExpenses)}</span>
             </div>
             <div
@@ -112,8 +119,10 @@ function CashFlowTab({
                 paddingLeft: "16px",
               }}
             >
-              <span>├─ Mortgage ({formatCurrency(mortgage)} × 50%):</span>{" "}
-              <span>-{formatCurrency(mortgage * 0.5)}</span>
+              <span>
+                ├─ Mortgage ({formatCurrency(mortgage)} × {dadLabel}):
+              </span>{" "}
+              <span>-{formatCurrency(mortgage * dadShare)}</span>
             </div>
             <div
               className="row"
@@ -123,8 +132,10 @@ function CashFlowTab({
                 paddingLeft: "16px",
               }}
             >
-              <span>├─ Tax ({formatCurrency(propertyTax)} × 50%):</span>{" "}
-              <span>-{formatCurrency(propertyTax * 0.5)}</span>
+              <span>
+                ├─ Tax ({formatCurrency(propertyTax)} × {dadLabel}):
+              </span>{" "}
+              <span>-{formatCurrency(propertyTax * dadShare)}</span>
             </div>
             <div
               className="row"
@@ -132,14 +143,33 @@ function CashFlowTab({
                 fontSize: "0.85rem",
                 color: "#94a3b8",
                 paddingLeft: "16px",
-                marginBottom: "8px",
+                marginBottom: isRental ? "0px" : "8px",
               }}
             >
-              <span>└─ HOA ({formatCurrency(hoa)} × 50%):</span>{" "}
-              <span>-{formatCurrency(hoa * 0.5)}</span>
+              <span>
+                {isRental ? "├" : "└"}─ HOA ({formatCurrency(hoa)} × {dadLabel}
+                ):
+              </span>{" "}
+              <span>-{formatCurrency(hoa * dadShare)}</span>
             </div>
+            {isRental && (
+              <div
+                className="row"
+                style={{
+                  fontSize: "0.85rem",
+                  color: "#94a3b8",
+                  paddingLeft: "16px",
+                  marginBottom: "8px",
+                }}
+              >
+                <span>
+                  └─ OpEx ({formatCurrency(opExMonthly)} × {dadLabel}):
+                </span>{" "}
+                <span>-{formatCurrency(opExMonthly * dadShare)}</span>
+              </div>
+            )}
             <div className="row">
-              <span>50% Rent Pot:</span>{" "}
+              <span>{dadLabel} Rent Pot:</span>{" "}
               <span className="positive">+{formatCurrency(dadRentIncome)}</span>
             </div>
             <hr />
@@ -160,7 +190,9 @@ function CashFlowTab({
               className="row"
               style={{ marginBottom: "4px", fontWeight: "bold" }}
             >
-              <span>25% Property Costs:</span>{" "}
+              <span>
+                {userLabel} Property Costs{isRental ? " + OpEx" : ""}:
+              </span>{" "}
               <span className="negative">-{formatCurrency(userExpenses)}</span>
             </div>
             <div
@@ -171,8 +203,10 @@ function CashFlowTab({
                 paddingLeft: "16px",
               }}
             >
-              <span>├─ Mortgage ({formatCurrency(mortgage)} × 25%):</span>{" "}
-              <span>-{formatCurrency(mortgage * 0.25)}</span>
+              <span>
+                ├─ Mortgage ({formatCurrency(mortgage)} × {userLabel}):
+              </span>{" "}
+              <span>-{formatCurrency(mortgage * userShare)}</span>
             </div>
             <div
               className="row"
@@ -182,8 +216,10 @@ function CashFlowTab({
                 paddingLeft: "16px",
               }}
             >
-              <span>├─ Tax ({formatCurrency(propertyTax)} × 25%):</span>{" "}
-              <span>-{formatCurrency(propertyTax * 0.25)}</span>
+              <span>
+                ├─ Tax ({formatCurrency(propertyTax)} × {userLabel}):
+              </span>{" "}
+              <span>-{formatCurrency(propertyTax * userShare)}</span>
             </div>
             <div
               className="row"
@@ -191,12 +227,31 @@ function CashFlowTab({
                 fontSize: "0.85rem",
                 color: "#94a3b8",
                 paddingLeft: "16px",
-                marginBottom: "8px",
+                marginBottom: isRental ? "0px" : "8px",
               }}
             >
-              <span>└─ HOA ({formatCurrency(hoa)} × 25%):</span>{" "}
-              <span>-{formatCurrency(hoa * 0.25)}</span>
+              <span>
+                {isRental ? "├" : "└"}─ HOA ({formatCurrency(hoa)} × {userLabel}
+                ):
+              </span>{" "}
+              <span>-{formatCurrency(hoa * userShare)}</span>
             </div>
+            {isRental && (
+              <div
+                className="row"
+                style={{
+                  fontSize: "0.85rem",
+                  color: "#94a3b8",
+                  paddingLeft: "16px",
+                  marginBottom: "8px",
+                }}
+              >
+                <span>
+                  └─ OpEx ({formatCurrency(opExMonthly)} × {userLabel}):
+                </span>{" "}
+                <span>-{formatCurrency(opExMonthly * userShare)}</span>
+              </div>
+            )}
             {!isRental && (
               <div className="row">
                 <span>Rent Paid Out:</span>{" "}
@@ -204,14 +259,14 @@ function CashFlowTab({
               </div>
             )}
             <div className="row">
-              <span>25% Rent Pot:</span>{" "}
+              <span>{userLabel} Rent Pot:</span>{" "}
               <span className="positive">
                 +{formatCurrency(userRentIncome)}
               </span>
             </div>
             {includeTaxSavings && (
               <div className="row">
-                <span>Tax Savings (Schedule {isRental ? "E" : "A"}):</span>{" "}
+                <span>Tax Savings (LLC/REPS):</span>{" "}
                 <span className={userTaxShield >= 0 ? "positive" : "negative"}>
                   {userTaxShield > 0 ? "+" : ""}
                   {formatCurrency(userTaxShield)}
@@ -236,7 +291,9 @@ function CashFlowTab({
               className="row"
               style={{ marginBottom: "4px", fontWeight: "bold" }}
             >
-              <span>25% Property Costs:</span>{" "}
+              <span>
+                {brotherLabel} Property Costs{isRental ? " + OpEx" : ""}:
+              </span>{" "}
               <span className="negative">
                 -{formatCurrency(brotherExpenses)}
               </span>
@@ -249,8 +306,10 @@ function CashFlowTab({
                 paddingLeft: "16px",
               }}
             >
-              <span>├─ Mortgage ({formatCurrency(mortgage)} × 25%):</span>{" "}
-              <span>-{formatCurrency(mortgage * 0.25)}</span>
+              <span>
+                ├─ Mortgage ({formatCurrency(mortgage)} × {brotherLabel}):
+              </span>{" "}
+              <span>-{formatCurrency(mortgage * brotherShare)}</span>
             </div>
             <div
               className="row"
@@ -260,8 +319,10 @@ function CashFlowTab({
                 paddingLeft: "16px",
               }}
             >
-              <span>├─ Tax ({formatCurrency(propertyTax)} × 25%):</span>{" "}
-              <span>-{formatCurrency(propertyTax * 0.25)}</span>
+              <span>
+                ├─ Tax ({formatCurrency(propertyTax)} × {brotherLabel}):
+              </span>{" "}
+              <span>-{formatCurrency(propertyTax * brotherShare)}</span>
             </div>
             <div
               className="row"
@@ -269,12 +330,31 @@ function CashFlowTab({
                 fontSize: "0.85rem",
                 color: "#94a3b8",
                 paddingLeft: "16px",
-                marginBottom: "8px",
+                marginBottom: isRental ? "0px" : "8px",
               }}
             >
-              <span>└─ HOA ({formatCurrency(hoa)} × 25%):</span>{" "}
-              <span>-{formatCurrency(hoa * 0.25)}</span>
+              <span>
+                {isRental ? "├" : "└"}─ HOA ({formatCurrency(hoa)} ×{" "}
+                {brotherLabel}):
+              </span>{" "}
+              <span>-{formatCurrency(hoa * brotherShare)}</span>
             </div>
+            {isRental && (
+              <div
+                className="row"
+                style={{
+                  fontSize: "0.85rem",
+                  color: "#94a3b8",
+                  paddingLeft: "16px",
+                  marginBottom: "8px",
+                }}
+              >
+                <span>
+                  └─ OpEx ({formatCurrency(opExMonthly)} × {brotherLabel}):
+                </span>{" "}
+                <span>-{formatCurrency(opExMonthly * brotherShare)}</span>
+              </div>
+            )}
             {!isRental && (
               <div className="row">
                 <span>Rent Paid Out:</span>{" "}
@@ -282,14 +362,14 @@ function CashFlowTab({
               </div>
             )}
             <div className="row">
-              <span>25% Rent Pot:</span>{" "}
+              <span>{brotherLabel} Rent Pot:</span>{" "}
               <span className="positive">
                 +{formatCurrency(brotherRentIncome)}
               </span>
             </div>
             {includeTaxSavings && (
               <div className="row">
-                <span>Tax Savings (Schedule {isRental ? "E" : "A"}):</span>{" "}
+                <span>Tax Savings (LLC/REPS):</span>{" "}
                 <span className={userTaxShield >= 0 ? "positive" : "negative"}>
                   {userTaxShield > 0 ? "+" : ""}
                   {formatCurrency(userTaxShield)}
