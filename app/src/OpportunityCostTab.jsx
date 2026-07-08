@@ -66,6 +66,12 @@ function OpportunityCostTab({
     let buyCumulativeSavings = 0;
     let rentCumulativeSavings = 0;
 
+    let prevYearStockPortfolio = STARTING_CASH;
+    let prevYearBuyLiquidCash = STARTING_CASH - initialDownPaymentUser - initialClosingCostsUser;
+    let prevYearCumulativeSavingsBuy = 0;
+    let prevYearCumulativeSavingsRent = 0;
+    let prevYearRemainingLoan = loanAmount;
+
     // Loop through every month up to selectedYear
     for (let m = 1; m <= selectedYear * 12; m++) {
       const yearIndex = Math.floor((m - 1) / 12); // 0-indexed year
@@ -179,6 +185,14 @@ function OpportunityCostTab({
       buyCumulativeSavings += buySavingsThisMonth;
       rentCumulativeSavings += rentSavingsThisMonth;
 
+      if (m === (selectedYear - 1) * 12) {
+        prevYearStockPortfolio = stockPortfolio;
+        prevYearBuyLiquidCash = buyLiquidCash;
+        prevYearCumulativeSavingsBuy = buyCumulativeSavings;
+        prevYearCumulativeSavingsRent = rentCumulativeSavings;
+        prevYearRemainingLoan = remainingBalance;
+      }
+
       if (m === selectedYear * 12) {
         finalMonthlyHouseCost = userNetCostThisMonth;
         finalMonthlyRentCost = currentEquivalentRent;
@@ -210,19 +224,41 @@ function OpportunityCostTab({
     const buyTotalLiquid = buyLiquidCash + userNetProceeds;
     const pathAWins = buyTotalLiquid > stockPortfolio;
     const delta = Math.abs(buyTotalLiquid - stockPortfolio);
+    
+    // --- THIS YEAR'S IMPACT ---
+    const buySavingsThisYear = buyCumulativeSavings - prevYearCumulativeSavingsBuy;
+    const rentSavingsThisYear = rentCumulativeSavings - prevYearCumulativeSavingsRent;
+    
+    const buyMarketReturnsThisYear = (buyLiquidCash - prevYearBuyLiquidCash) - buySavingsThisYear;
+    const rentMarketReturnsThisYear = (stockPortfolio - prevYearStockPortfolio) - rentSavingsThisYear;
+    
+    const prevGrossEquityTotal = purchasePrice * Math.pow(1 + appreciation / 100, selectedYear - 1);
+    const appreciationThisYearTotal = grossEquityTotal - prevGrossEquityTotal;
+    const principalPaydownThisYearTotal = prevYearRemainingLoan - remainingLoanTotal;
 
+    const currentHomeValueTotal = purchasePrice * Math.pow(1 + appreciation / 100, selectedYear);
+    
     return {
       STARTING_CASH,
-      totalInitialSunkUser,
-      finalPropertyVal,
+      stockPortfolio,
+      buyNetWorth,
       userHomeEquity,
       userNetProceeds,
       buyLiquidCash,
-      buyNetWorth,
       buyTotalLiquid,
       buyCumulativeSavings,
       rentCumulativeSavings,
-      stockPortfolio,
+      buySavingsThisYear,
+      rentSavingsThisYear,
+      buyMarketReturnsThisYear,
+      rentMarketReturnsThisYear,
+      appreciationThisYearUser: appreciationThisYearTotal * userEquityShare,
+      principalPaydownThisYearUser: principalPaydownThisYearTotal * userEquityShare,
+      currentHomeValueUser: currentHomeValueTotal * userEquityShare,
+      remainingLoanUser: remainingLoanTotal * userEquityShare,
+      sellerClosingCostsUser: currentHomeValueTotal * 0.06 * userEquityShare,
+      buyCumulativeMarketReturns: buyLiquidCash - (STARTING_CASH - initialDownPaymentUser - initialClosingCostsUser + buyCumulativeSavings),
+      rentCumulativeMarketReturns: stockPortfolio - (STARTING_CASH + rentCumulativeSavings),
       totalHouseCashBurned,
       totalRentCashBurned,
       pathAWins,
@@ -329,103 +365,86 @@ function OpportunityCostTab({
             Path A: Buy the Condo
           </div>
           <div className="card-body">
-            <div className="row">
-              <span>Starting Cash (Day 1):</span>{" "}
-              <span className="positive">
-                {formatCurrency(data.STARTING_CASH)}
-              </span>
-            </div>
-            <div
-              className="row"
-              style={{
-                fontSize: "0.85rem",
-                color: "#94a3b8",
-                paddingLeft: "16px",
-              }}
-            >
-              <span>
-                ├─ Minus 20% Down ({data.userEquityShare * 100}% share):
-              </span>{" "}
-              <span className="negative">
-                -{formatCurrency(data.initialDownPaymentUser)}
-              </span>
-            </div>
-            <div
-              className="row"
-              style={{
-                fontSize: "0.85rem",
-                color: "#94a3b8",
-                paddingLeft: "16px",
-                marginBottom: "8px",
-              }}
-            >
-              <span>
-                └─ Minus 2% Closing ({data.userEquityShare * 100}% share):
-              </span>{" "}
-              <span className="negative">
-                -{formatCurrency(data.initialClosingCostsUser)}
-              </span>
-            </div>
-
-            <hr
-              style={{ borderColor: "rgba(255,255,255,0.1)", margin: "16px 0" }}
-            />
-            <div className="row">
-              <span>Your Liquid Cash (Invested at {stockMarketReturn}%):</span>{" "}
-              <span
-                className={data.buyLiquidCash >= 0 ? "positive" : "negative"}
-              >
-                {formatCurrency(data.buyLiquidCash)}
-              </span>
-            </div>
-            <div
-              className="row"
-              style={{
-                fontSize: "0.85rem",
-                color: "#94a3b8",
-                paddingLeft: "16px",
-              }}
-            >
-              <span>└─ From Cumulative Monthly Savings:</span>{" "}
-              <span className="positive">+{formatCurrency(data.buyCumulativeSavings)}</span>
-            </div>
-            <div className="row">
-              <span>Your Home Equity ({data.userEquityShare * 100}%):</span>{" "}
-              <span className="positive">
-                +{formatCurrency(data.userHomeEquity)}
-              </span>
-            </div>
-            <div
-              className="row"
-              style={{
-                fontSize: "0.85rem",
-                color: "#94a3b8",
-                paddingLeft: "16px",
-              }}
-            >
-              <span>└─ Net Proceeds if Sold Today:</span>{" "}
-              <span>+{formatCurrency(data.userNetProceeds)}</span>
-            </div>
-
-            <hr
-              style={{ borderColor: "rgba(255,255,255,0.1)", margin: "16px 0" }}
-            />
-
+            {/* TOP: Current Snapshot */}
             <div className="row total" style={{ marginBottom: "8px" }}>
-              <span style={{ fontSize: "1.1rem" }}>
-                Total Net Worth:
-              </span>{" "}
-              <span className="positive" style={{ fontSize: "1.3rem" }}>
-                {formatCurrency(data.buyNetWorth)}
-              </span>
+              <span style={{ fontSize: "1.1rem" }}>Total Net Worth:</span>
+              <span className="positive" style={{ fontSize: "1.3rem" }}>{formatCurrency(data.buyNetWorth)}</span>
             </div>
             <div className="row total">
-              <span style={{ fontSize: "1.1rem" }}>
-                Total Liquid (If Sold Today):
-              </span>{" "}
-              <span className="positive" style={{ fontSize: "1.3rem" }}>
-                {formatCurrency(data.buyTotalLiquid)}
-              </span>
+              <span style={{ fontSize: "1.1rem" }}>Total Liquid (If Sold Today):</span>
+              <span className="positive" style={{ fontSize: "1.3rem" }}>{formatCurrency(data.buyTotalLiquid)}</span>
+            </div>
+
+            <hr style={{ borderColor: "rgba(255,255,255,0.1)", margin: "16px 0" }} />
+
+            {/* MIDDLE 1: Cumulative Waterfall */}
+            <div style={{ fontWeight: "bold", marginBottom: "8px", color: "#60a5fa" }}>Cumulative Breakdown (Day 1 ➔ Year {selectedYear}):</div>
+            <div className="row">
+              <span>Starting Cash (Day 1):</span>
+              <span className="positive">{formatCurrency(data.STARTING_CASH)}</span>
+            </div>
+            <div className="row" style={{ fontSize: "0.85rem", color: "#94a3b8", paddingLeft: "16px" }}>
+              <span>├─ Minus 20% Down ({data.userEquityShare * 100}% share):</span>
+              <span className="negative">-{formatCurrency(data.initialDownPaymentUser)}</span>
+            </div>
+            <div className="row" style={{ fontSize: "0.85rem", color: "#94a3b8", paddingLeft: "16px" }}>
+              <span>├─ Minus 2% Closing ({data.userEquityShare * 100}% share):</span>
+              <span className="negative">-{formatCurrency(data.initialClosingCostsUser)}</span>
+            </div>
+            <div className="row" style={{ fontSize: "0.85rem", color: "#94a3b8", paddingLeft: "16px" }}>
+              <span>├─ Cumulative Housing Savings Invested:</span>
+              <span className="positive">+{formatCurrency(data.buyCumulativeSavings)}</span>
+            </div>
+            <div className="row" style={{ fontSize: "0.85rem", color: "#94a3b8", paddingLeft: "16px", marginBottom: "8px" }}>
+              <span>└─ Cumulative Market Returns:</span>
+              <span className={data.buyCumulativeMarketReturns >= 0 ? "positive" : "negative"}>{data.buyCumulativeMarketReturns >= 0 ? "+" : ""}{formatCurrency(data.buyCumulativeMarketReturns)}</span>
+            </div>
+            <div className="row" style={{ marginBottom: "16px" }}>
+              <span>= Current Liquid Cash:</span>
+              <span className={data.buyLiquidCash >= 0 ? "positive" : "negative"}>{formatCurrency(data.buyLiquidCash)}</span>
+            </div>
+
+            <div className="row">
+              <span>Current Home Value ({data.userEquityShare * 100}% share):</span>
+              <span className="positive">{formatCurrency(data.currentHomeValueUser)}</span>
+            </div>
+            <div className="row" style={{ fontSize: "0.85rem", color: "#94a3b8", paddingLeft: "16px", marginBottom: "8px" }}>
+              <span>└─ Minus Remaining Loan ({data.userEquityShare * 100}% share):</span>
+              <span className="negative">-{formatCurrency(data.remainingLoanUser)}</span>
+            </div>
+            <div className="row" style={{ marginBottom: "16px" }}>
+              <span>= Gross Home Equity:</span>
+              <span className="positive">{formatCurrency(data.userHomeEquity)}</span>
+            </div>
+            
+            <div className="row" style={{ fontSize: "0.85rem", color: "#94a3b8", paddingLeft: "16px" }}>
+              <span>Minus Seller Closing Costs (6%):</span>
+              <span className="negative">-{formatCurrency(data.sellerClosingCostsUser)}</span>
+            </div>
+            <div className="row">
+              <span>= Net Proceeds If Sold:</span>
+              <span className="positive">{formatCurrency(data.userNetProceeds)}</span>
+            </div>
+
+            <hr style={{ borderColor: "rgba(255,255,255,0.1)", margin: "16px 0" }} />
+            
+            {/* MIDDLE 2: This Year's Impact */}
+            <div style={{ fontWeight: "bold", marginBottom: "8px", color: "#a855f7" }}>This Year's Impact (Year {selectedYear} Only):</div>
+            <div className="row" style={{ fontSize: "0.9rem" }}>
+              <span>Market Returns this year:</span>
+              <span className={data.buyMarketReturnsThisYear >= 0 ? "positive" : "negative"}>{data.buyMarketReturnsThisYear >= 0 ? "+" : ""}{formatCurrency(data.buyMarketReturnsThisYear)}</span>
+            </div>
+            <div className="row" style={{ fontSize: "0.9rem" }}>
+              <span>Housing Savings this year:</span>
+              <span className="positive">+{formatCurrency(data.buySavingsThisYear)}</span>
+            </div>
+            <div className="row" style={{ fontSize: "0.9rem" }}>
+              <span>Property Appreciation this year:</span>
+              <span className={data.appreciationThisYearUser >= 0 ? "positive" : "negative"}>{data.appreciationThisYearUser >= 0 ? "+" : ""}{formatCurrency(data.appreciationThisYearUser)}</span>
+            </div>
+            <div className="row" style={{ fontSize: "0.9rem" }}>
+              <span>Principal Paydown this year:</span>
+              <span className="positive">+{formatCurrency(data.principalPaydownThisYearUser)}</span>
             </div>
           </div>
 
@@ -481,50 +500,48 @@ function OpportunityCostTab({
             Path B: Rent & Invest
           </div>
           <div className="card-body">
-            <div className="row">
-              <span>Starting Cash (Day 1):</span>{" "}
-              <span className="positive">
-                {formatCurrency(data.STARTING_CASH)}
-              </span>
+            {/* TOP: Current Snapshot */}
+            <div className="row total" style={{ marginBottom: "8px" }}>
+              <span style={{ fontSize: "1.1rem" }}>Total Net Worth:</span>
+              <span className="positive" style={{ fontSize: "1.3rem" }}>{formatCurrency(data.stockPortfolio)}</span>
+            </div>
+            <div className="row total">
+              <span style={{ fontSize: "1.1rem" }}>Total Liquid (If Sold Today):</span>
+              <span className="positive" style={{ fontSize: "1.3rem" }}>{formatCurrency(data.stockPortfolio)}</span>
             </div>
 
-            <hr
-              style={{ borderColor: "rgba(255,255,255,0.1)", margin: "16px 0" }}
-            />
+            <hr style={{ borderColor: "rgba(255,255,255,0.1)", margin: "16px 0" }} />
 
+            {/* MIDDLE 1: Cumulative Waterfall */}
+            <div style={{ fontWeight: "bold", marginBottom: "8px", color: "#60a5fa" }}>Cumulative Breakdown (Day 1 ➔ Year {selectedYear}):</div>
             <div className="row">
-              <span>Your Liquid Cash (Invested at {stockMarketReturn}%):</span>{" "}
-              <span
-                className={data.stockPortfolio >= 0 ? "positive" : "negative"}
-              >
-                {formatCurrency(data.stockPortfolio)}
-              </span>
+              <span>Starting Cash (Day 1):</span>
+              <span className="positive">{formatCurrency(data.STARTING_CASH)}</span>
             </div>
-            <div
-              className="row"
-              style={{
-                fontSize: "0.85rem",
-                color: "#94a3b8",
-                paddingLeft: "16px",
-              }}
-            >
-              <span>└─ From Cumulative Monthly Savings:</span>{" "}
+            <div className="row" style={{ fontSize: "0.85rem", color: "#94a3b8", paddingLeft: "16px" }}>
+              <span>├─ Cumulative Housing Savings Invested:</span>
               <span className="positive">+{formatCurrency(data.rentCumulativeSavings)}</span>
+            </div>
+            <div className="row" style={{ fontSize: "0.85rem", color: "#94a3b8", paddingLeft: "16px", marginBottom: "8px" }}>
+              <span>└─ Cumulative Market Returns:</span>
+              <span className={data.rentCumulativeMarketReturns >= 0 ? "positive" : "negative"}>{data.rentCumulativeMarketReturns >= 0 ? "+" : ""}{formatCurrency(data.rentCumulativeMarketReturns)}</span>
+            </div>
+            <div className="row" style={{ marginBottom: "16px" }}>
+              <span>= Current Liquid Cash:</span>
+              <span className={data.stockPortfolio >= 0 ? "positive" : "negative"}>{formatCurrency(data.stockPortfolio)}</span>
             </div>
 
             <hr style={{ borderColor: "rgba(255,255,255,0.1)", margin: "16px 0" }} />
             
-            <div className="row total">
-              <span style={{ fontSize: "1.1rem" }}>Total Net Worth:</span>{" "}
-              <span className="positive" style={{ fontSize: "1.3rem" }}>
-                {formatCurrency(data.stockPortfolio)}
-              </span>
+            {/* MIDDLE 2: This Year's Impact */}
+            <div style={{ fontWeight: "bold", marginBottom: "8px", color: "#a855f7" }}>This Year's Impact (Year {selectedYear} Only):</div>
+            <div className="row" style={{ fontSize: "0.9rem" }}>
+              <span>Market Returns this year:</span>
+              <span className={data.rentMarketReturnsThisYear >= 0 ? "positive" : "negative"}>{data.rentMarketReturnsThisYear >= 0 ? "+" : ""}{formatCurrency(data.rentMarketReturnsThisYear)}</span>
             </div>
-            <div className="row total">
-              <span style={{ fontSize: "1.1rem" }}>Total Liquid (If Sold Today):</span>{" "}
-              <span className="positive" style={{ fontSize: "1.3rem" }}>
-                {formatCurrency(data.stockPortfolio)}
-              </span>
+            <div className="row" style={{ fontSize: "0.9rem" }}>
+              <span>Housing Savings this year:</span>
+              <span className="positive">+{formatCurrency(data.rentSavingsThisYear)}</span>
             </div>
 
             <div
