@@ -274,6 +274,8 @@ function OpportunityCostTab({
       currentHomeValueUser: currentHomeValueTotal * userEquityShare,
       remainingLoanUser: remainingLoanTotal * userEquityShare,
       sellerClosingCostsUser: currentHomeValueTotal * 0.06 * userEquityShare,
+      prevYearBuyLiquidCash,
+      prevYearStockPortfolio,
       buyCumulativeMarketReturns: buyLiquidCash - (STARTING_CASH - initialDownPaymentUser - initialClosingCostsUser + buyCumulativeSavings),
       rentCumulativeMarketReturns: stockPortfolio - (STARTING_CASH + rentCumulativeSavings),
       totalHouseCashBurned,
@@ -507,7 +509,7 @@ function OpportunityCostTab({
               <div className="row" style={{ fontSize: "0.9rem", color: "#94a3b8", paddingLeft: "16px", marginTop: "8px" }}>
                 <span>+ Market Returns this year:</span>
                 <span className={data.buyMarketReturnsThisYear >= 0 ? "positive" : "negative"}>
-                  <MathTooltip ledger={`Market Profit generated on liquid cash\nbetween Jan and Dec of Year ${selectedYear}.`}>
+                  <MathTooltip ledger={`  (Calculated via month-by-month compounding simulation)\n\n  End of Year ${selectedYear} Balance:      ${formatCurrency(data.buyLiquidCash)}\n- Start of Year ${selectedYear} Balance:    -${formatCurrency(data.prevYearBuyLiquidCash)}\n- New Savings Deposited This Year: -${formatCurrency(data.buySavingsThisYear)}\n----------------------------------------\n= Market Returns this year:          ${formatCurrency(data.buyMarketReturnsThisYear)}`}>
                     {data.buyMarketReturnsThisYear >= 0 ? "+" : ""}{formatCurrency(data.buyMarketReturnsThisYear)}
                   </MathTooltip>
                 </span>
@@ -681,7 +683,7 @@ function OpportunityCostTab({
               <div className="row" style={{ fontSize: "0.9rem", color: "#94a3b8", paddingLeft: "16px", marginTop: "8px" }}>
                 <span>+ Market Returns this year:</span>
                 <span className={data.rentMarketReturnsThisYear >= 0 ? "positive" : "negative"}>
-                  <MathTooltip ledger={`Market Profit generated on liquid cash\nbetween Jan and Dec of Year ${selectedYear}.`}>
+                  <MathTooltip ledger={`  (Calculated via month-by-month compounding simulation)\n\n  End of Year ${selectedYear} Balance:      ${formatCurrency(data.stockPortfolio)}\n- Start of Year ${selectedYear} Balance:    -${formatCurrency(data.prevYearStockPortfolio)}\n- New Savings Deposited This Year: -${formatCurrency(data.rentSavingsThisYear)}\n----------------------------------------\n= Market Returns this year:          ${formatCurrency(data.rentMarketReturnsThisYear)}`}>
                     {data.rentMarketReturnsThisYear >= 0 ? "+" : ""}{formatCurrency(data.rentMarketReturnsThisYear)}
                   </MathTooltip>
                 </span>
