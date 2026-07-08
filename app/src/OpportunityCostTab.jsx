@@ -202,7 +202,11 @@ function OpportunityCostTab({
         
         // Calculate previous year net worths
         const prevYearPropertyVal = purchasePrice * Math.pow(1 + appreciation / 100, selectedYear - 1);
-        const prevYearGrossEquityTotal = prevYearPropertyVal - remainingBalance;
+        const prevYearIndex = (selectedYear - 1) - 1; 
+        const prevYearRemainingBalance = prevYearIndex >= 0 && amortizationSchedule.length > 0
+          ? amortizationSchedule[prevYearIndex].balance 
+          : loanAmount;
+        const prevYearGrossEquityTotal = prevYearPropertyVal - prevYearRemainingBalance;
         prevYearNetWorthBuy = buyLiquidCash + (prevYearGrossEquityTotal * userEquityShare);
         prevYearNetWorthRent = stockPortfolio;
       }
