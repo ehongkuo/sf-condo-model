@@ -692,10 +692,12 @@ function App() {
             hoaInflation={hoaInflation}
             appreciation={appreciation}
             userRent={userRent}
-            totalRent={totalRent}
+            brotherRent={brotherRent}
+            tenantRent={tenantRent}
+            operatingExpenseRate={operatingExpenseRate}
+            moveOutYear={moveOutYear}
             selectedYear={selectedYear}
             amortizationSchedule={amortizationSchedule}
-            userTaxShield={appliedTaxShield}
           />
         )}
       </main>
