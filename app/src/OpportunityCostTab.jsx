@@ -62,6 +62,9 @@ function OpportunityCostTab({
     let totalRentCashBurned = 0;
     let finalMonthlyHouseCost = 0;
     let finalMonthlyRentCost = 0;
+    
+    let buyCumulativeSavings = 0;
+    let rentCumulativeSavings = 0;
 
     // Loop through every month up to selectedYear
     for (let m = 1; m <= selectedYear * 12; m++) {
@@ -162,9 +165,19 @@ function OpportunityCostTab({
       stockPortfolio = stockPortfolio * (1 + monthlyStockRate);
       buyLiquidCash = buyLiquidCash * (1 + monthlyStockRate);
 
-      // Deduct living expenses
-      stockPortfolio -= currentEquivalentRent;
-      buyLiquidCash -= userNetCostThisMonth;
+      // --- PAYCHECK ABSTRACTION (Max Budget) ---
+      const maxBudgetThisMonth = Math.max(userNetCostThisMonth, currentEquivalentRent);
+      
+      // Calculate savings for each path
+      const buySavingsThisMonth = maxBudgetThisMonth - userNetCostThisMonth;
+      const rentSavingsThisMonth = maxBudgetThisMonth - currentEquivalentRent;
+
+      // Add savings to liquid portfolios
+      buyLiquidCash += buySavingsThisMonth;
+      stockPortfolio += rentSavingsThisMonth;
+      
+      buyCumulativeSavings += buySavingsThisMonth;
+      rentCumulativeSavings += rentSavingsThisMonth;
 
       if (m === selectedYear * 12) {
         finalMonthlyHouseCost = userNetCostThisMonth;
@@ -193,9 +206,10 @@ function OpportunityCostTab({
       (grossEquityTotal - sellerClosingCostsTotal) * userEquityShare;
 
     // Total Net Worth Calculation
-    const buyNetWorth = buyLiquidCash + userNetProceeds;
-    const pathAWins = buyNetWorth > stockPortfolio;
-    const delta = Math.abs(buyNetWorth - stockPortfolio);
+    const buyNetWorth = buyLiquidCash + userHomeEquity;
+    const buyTotalLiquid = buyLiquidCash + userNetProceeds;
+    const pathAWins = buyTotalLiquid > stockPortfolio;
+    const delta = Math.abs(buyTotalLiquid - stockPortfolio);
 
     return {
       STARTING_CASH,
@@ -205,6 +219,9 @@ function OpportunityCostTab({
       userNetProceeds,
       buyLiquidCash,
       buyNetWorth,
+      buyTotalLiquid,
+      buyCumulativeSavings,
+      rentCumulativeSavings,
       stockPortfolio,
       totalHouseCashBurned,
       totalRentCashBurned,
@@ -361,6 +378,17 @@ function OpportunityCostTab({
                 {formatCurrency(data.buyLiquidCash)}
               </span>
             </div>
+            <div
+              className="row"
+              style={{
+                fontSize: "0.85rem",
+                color: "#94a3b8",
+                paddingLeft: "16px",
+              }}
+            >
+              <span>└─ From Cumulative Monthly Savings:</span>{" "}
+              <span className="positive">+{formatCurrency(data.buyCumulativeSavings)}</span>
+            </div>
             <div className="row">
               <span>Your Home Equity ({data.userEquityShare * 100}%):</span>{" "}
               <span className="positive">
@@ -383,12 +411,20 @@ function OpportunityCostTab({
               style={{ borderColor: "rgba(255,255,255,0.1)", margin: "16px 0" }}
             />
 
+            <div className="row total" style={{ marginBottom: "8px" }}>
+              <span style={{ fontSize: "1.1rem" }}>
+                Total Net Worth:
+              </span>{" "}
+              <span className="positive" style={{ fontSize: "1.3rem" }}>
+                {formatCurrency(data.buyNetWorth)}
+              </span>
+            </div>
             <div className="row total">
               <span style={{ fontSize: "1.1rem" }}>
                 Total Liquid (If Sold Today):
               </span>{" "}
-              <span className="positive" style={{ fontSize: "1.5rem" }}>
-                {formatCurrency(data.buyNetWorth)}
+              <span className="positive" style={{ fontSize: "1.3rem" }}>
+                {formatCurrency(data.buyTotalLiquid)}
               </span>
             </div>
           </div>
@@ -452,28 +488,6 @@ function OpportunityCostTab({
               </span>
             </div>
 
-            <div
-              className="row"
-              style={{
-                fontSize: "0.85rem",
-                color: "#94a3b8",
-                paddingLeft: "16px",
-              }}
-            >
-              <span>├─ Minus Down Payment:</span> <span>$0</span>
-            </div>
-            <div
-              className="row"
-              style={{
-                fontSize: "0.85rem",
-                color: "#94a3b8",
-                paddingLeft: "16px",
-                marginBottom: "8px",
-              }}
-            >
-              <span>└─ Minus Closing Costs:</span> <span>$0</span>
-            </div>
-
             <hr
               style={{ borderColor: "rgba(255,255,255,0.1)", margin: "16px 0" }}
             />
@@ -486,21 +500,29 @@ function OpportunityCostTab({
                 {formatCurrency(data.stockPortfolio)}
               </span>
             </div>
-
-            <div className="row">
-              <span>Your Home Equity:</span>{" "}
-              <span style={{ color: "#94a3b8" }}>$0</span>
+            <div
+              className="row"
+              style={{
+                fontSize: "0.85rem",
+                color: "#94a3b8",
+                paddingLeft: "16px",
+              }}
+            >
+              <span>└─ From Cumulative Monthly Savings:</span>{" "}
+              <span className="positive">+{formatCurrency(data.rentCumulativeSavings)}</span>
             </div>
 
-            <hr
-              style={{ borderColor: "rgba(255,255,255,0.1)", margin: "16px 0" }}
-            />
-
+            <hr style={{ borderColor: "rgba(255,255,255,0.1)", margin: "16px 0" }} />
+            
             <div className="row total">
-              <span style={{ fontSize: "1.1rem" }}>
-                Total Liquid (If Sold Today):
-              </span>{" "}
-              <span className="positive" style={{ fontSize: "1.5rem" }}>
+              <span style={{ fontSize: "1.1rem" }}>Total Net Worth:</span>{" "}
+              <span className="positive" style={{ fontSize: "1.3rem" }}>
+                {formatCurrency(data.stockPortfolio)}
+              </span>
+            </div>
+            <div className="row total">
+              <span style={{ fontSize: "1.1rem" }}>Total Liquid (If Sold Today):</span>{" "}
+              <span className="positive" style={{ fontSize: "1.3rem" }}>
                 {formatCurrency(data.stockPortfolio)}
               </span>
             </div>
