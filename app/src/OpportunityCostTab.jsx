@@ -70,7 +70,10 @@ function OpportunityCostTab({
     let prevYearBuyLiquidCash = STARTING_CASH - initialDownPaymentUser - initialClosingCostsUser;
     let prevYearCumulativeSavingsBuy = 0;
     let prevYearCumulativeSavingsRent = 0;
-    let prevYearRemainingLoan = loanAmount;
+    
+    const prevYearRemainingLoan = selectedYear > 1 
+      ? (amortizationSchedule[selectedYear - 2]?.balance || 0)
+      : loanAmount;
 
     // Loop through every month up to selectedYear
     for (let m = 1; m <= selectedYear * 12; m++) {
@@ -190,7 +193,6 @@ function OpportunityCostTab({
         prevYearBuyLiquidCash = buyLiquidCash;
         prevYearCumulativeSavingsBuy = buyCumulativeSavings;
         prevYearCumulativeSavingsRent = rentCumulativeSavings;
-        prevYearRemainingLoan = remainingBalance;
       }
 
       if (m === selectedYear * 12) {
