@@ -138,13 +138,9 @@ function App() {
   const rentalPropertyTax = propertyTaxAnnual * llcShare;
   const rentalHOA = currentHOAAnnual * llcShare;
 
-  // Operating expenses (annual totals for the whole LLC)
-  const annualCleaning = 2400;
-  const annualRepairs = 3000;
-  const annualTravel = 1200;
-  const annualInsurance = 1800;
-  const totalOperatingExpenses =
-    annualCleaning + annualRepairs + annualTravel + annualInsurance;
+  // Operating expenses as a % of property value (covers cleaning, repairs, travel, insurance)
+  const operatingExpenseRate = 0.0075; // 0.75% of property value per year
+  const totalOperatingExpenses = purchasePrice * operatingExpenseRate;
   const userShareOfOperatingExpenses = totalOperatingExpenses * llcShare;
 
   const totalRentalDeductions =
@@ -624,10 +620,8 @@ function App() {
             rentalHOA={rentalHOA}
             userShareOfDepreciation={userShareOfDepreciation}
             userShareOfOperatingExpenses={userShareOfOperatingExpenses}
-            annualCleaning={annualCleaning}
-            annualRepairs={annualRepairs}
-            annualTravel={annualTravel}
-            annualInsurance={annualInsurance}
+            totalOperatingExpenses={totalOperatingExpenses}
+            operatingExpenseRate={operatingExpenseRate}
             totalRentalDeductions={totalRentalDeductions}
             rentalIncome={rentalIncome}
             netRentalIncome={netRentalIncome}

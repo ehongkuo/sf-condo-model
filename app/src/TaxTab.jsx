@@ -28,10 +28,8 @@ function TaxTab({
   rentalHOA,
   userShareOfDepreciation,
   userShareOfOperatingExpenses,
-  annualCleaning,
-  annualRepairs,
-  annualTravel,
-  annualInsurance,
+  totalOperatingExpenses,
+  operatingExpenseRate,
   totalRentalDeductions,
   rentalIncome,
   netRentalIncome,
@@ -188,110 +186,27 @@ function TaxTab({
               >
                 📋 Operating Expenses (Your 33.3% Share)
               </h3>
-              <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
-                <div
-                  style={{
-                    flex: 1,
-                    minWidth: "140px",
-                    background: "rgba(0,0,0,0.3)",
-                    padding: "16px",
-                    borderRadius: "10px",
-                    textAlign: "center",
-                  }}
-                >
-                  <div
-                    style={{
-                      color: "#94a3b8",
-                      fontSize: "0.8rem",
-                      marginBottom: "4px",
-                    }}
-                  >
-                    🧹 Cleaning
-                  </div>
-                  <div style={{ color: "#e2e8f0", fontWeight: "bold" }}>
-                    {formatCurrency(annualCleaning * llcShare)}/yr
-                  </div>
-                  <div style={{ color: "#64748b", fontSize: "0.75rem" }}>
-                    ({formatCurrency(annualCleaning)} total)
-                  </div>
+              <div
+                style={{
+                  background: "rgba(0,0,0,0.3)",
+                  padding: "16px",
+                  borderRadius: "10px",
+                }}
+              >
+                <div className="row" style={{ marginBottom: "8px" }}>
+                  <span>
+                    Estimated at {(operatingExpenseRate * 100).toFixed(2)}% of
+                    property value:
+                  </span>
+                  <span style={{ color: "#e2e8f0", fontWeight: "bold" }}>
+                    {formatCurrency(userShareOfOperatingExpenses)}/yr
+                  </span>
                 </div>
-                <div
-                  style={{
-                    flex: 1,
-                    minWidth: "140px",
-                    background: "rgba(0,0,0,0.3)",
-                    padding: "16px",
-                    borderRadius: "10px",
-                    textAlign: "center",
-                  }}
-                >
-                  <div
-                    style={{
-                      color: "#94a3b8",
-                      fontSize: "0.8rem",
-                      marginBottom: "4px",
-                    }}
-                  >
-                    🔧 Repairs
-                  </div>
-                  <div style={{ color: "#e2e8f0", fontWeight: "bold" }}>
-                    {formatCurrency(annualRepairs * llcShare)}/yr
-                  </div>
-                  <div style={{ color: "#64748b", fontSize: "0.75rem" }}>
-                    ({formatCurrency(annualRepairs)} total)
-                  </div>
-                </div>
-                <div
-                  style={{
-                    flex: 1,
-                    minWidth: "140px",
-                    background: "rgba(0,0,0,0.3)",
-                    padding: "16px",
-                    borderRadius: "10px",
-                    textAlign: "center",
-                  }}
-                >
-                  <div
-                    style={{
-                      color: "#94a3b8",
-                      fontSize: "0.8rem",
-                      marginBottom: "4px",
-                    }}
-                  >
-                    🚗 Travel
-                  </div>
-                  <div style={{ color: "#e2e8f0", fontWeight: "bold" }}>
-                    {formatCurrency(annualTravel * llcShare)}/yr
-                  </div>
-                  <div style={{ color: "#64748b", fontSize: "0.75rem" }}>
-                    ({formatCurrency(annualTravel)} total)
-                  </div>
-                </div>
-                <div
-                  style={{
-                    flex: 1,
-                    minWidth: "140px",
-                    background: "rgba(0,0,0,0.3)",
-                    padding: "16px",
-                    borderRadius: "10px",
-                    textAlign: "center",
-                  }}
-                >
-                  <div
-                    style={{
-                      color: "#94a3b8",
-                      fontSize: "0.8rem",
-                      marginBottom: "4px",
-                    }}
-                  >
-                    🛡️ Insurance
-                  </div>
-                  <div style={{ color: "#e2e8f0", fontWeight: "bold" }}>
-                    {formatCurrency(annualInsurance * llcShare)}/yr
-                  </div>
-                  <div style={{ color: "#64748b", fontSize: "0.75rem" }}>
-                    ({formatCurrency(annualInsurance)} total)
-                  </div>
+                <div style={{ color: "#64748b", fontSize: "0.8rem" }}>
+                  Covers cleaning, repairs &amp; maintenance, travel/mileage,
+                  and landlord insurance. LLC total:{" "}
+                  {formatCurrency(totalOperatingExpenses)}/yr (
+                  {formatCurrency(totalOperatingExpenses / 12)}/mo).
                 </div>
               </div>
             </div>
