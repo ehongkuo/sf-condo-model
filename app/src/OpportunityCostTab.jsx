@@ -398,119 +398,11 @@ function OpportunityCostTab({
             Path A: Buy the Condo
           </div>
           <div className="card-body">
-            {/* TOP: Current Snapshot */}
-            <div className="row total" style={{ marginBottom: "8px" }}>
-              <span style={{ fontSize: "1.1rem" }}>Total Net Worth:</span>
-              <span className="positive" style={{ fontSize: "1.3rem" }}>
-                <MathTooltip ledger={`  Liquid Cash:        ${formatCurrency(data.buyLiquidCash)}\n+ Gross Home Equity:  ${formatCurrency(data.userHomeEquity)}\n------------------------------\n= Total Net Worth:    ${formatCurrency(data.buyNetWorth)}`}>
-                  {formatCurrency(data.buyNetWorth)}
-                </MathTooltip>
-              </span>
-            </div>
-            <div className="row total">
-              <span style={{ fontSize: "1.1rem" }}>Total Liquid (If Sold Today):</span>
-              <span className="positive" style={{ fontSize: "1.3rem" }}>
-                <MathTooltip ledger={`  Liquid Cash:          ${formatCurrency(data.buyLiquidCash)}\n+ Net Proceeds if Sold: ${formatCurrency(data.userNetProceeds)}\n--------------------------------\n= Total Liquid:         ${formatCurrency(data.buyTotalLiquid)}`}>
-                  {formatCurrency(data.buyTotalLiquid)}
-                </MathTooltip>
-              </span>
-            </div>
-
-            <hr style={{ borderColor: "rgba(255,255,255,0.1)", margin: "16px 0" }} />
-
-            {/* MIDDLE 1: Cumulative Net Worth Waterfall */}
+            {/* TOP: This Year's Waterfall */}
             <div style={{ background: "rgba(0,0,0,0.2)", padding: "16px", borderRadius: "12px", marginBottom: "16px", border: "1px solid rgba(255,255,255,0.05)" }}>
-              <div style={{ fontWeight: "bold", marginBottom: "12px", color: "#60a5fa" }}>Cumulative Net Worth Waterfall (Day 1 ➔ Year {selectedYear}):</div>
-              <div className="row">
-                <span>Starting Net Worth (Day 1):</span>
-                <span className="positive">
-                  {formatCurrency(data.STARTING_CASH)}
-                </span>
-              </div>
-              <div className="row" style={{ fontSize: "0.85rem", color: "#94a3b8", paddingLeft: "16px" }}>
-                <span>Minus Initial Closing Costs:</span>
-                <span className="negative">
-                  <MathTooltip ledger={`  Purchase Price:    ${formatCurrency(data.purchasePrice)}\n* Closing Cost %:    2%\n* Your Equity Share: ${data.userEquityShare * 100}%\n------------------------------\n= Initial Closing Costs: ${formatCurrency(data.initialClosingCostsUser)}`}>
-                    -{formatCurrency(data.initialClosingCostsUser)}
-                  </MathTooltip>
-                </span>
-              </div>
-              <div className="row" style={{ fontSize: "0.85rem", color: "#94a3b8", paddingLeft: "16px" }}>
-                <span>Cumulative Market Returns:</span>
-                <span className={data.buyCumulativeMarketReturns >= 0 ? "positive" : "negative"}>
-                  <MathTooltip ledger={`  Interest on Day 1 Liquid Cash:\n    ${formatCurrency(data.buyDay1Cash)} compounding at ${stockMarketReturn}% APY for ${selectedYear} years\n  = ${formatCurrency(data.buyCumulativeProfitOnDay1)}\n\n  Interest on Housing Savings Deposits:\n    ${formatCurrency(data.buyCumulativeSavings)} deposited over ${selectedYear * 12} months\n  = ${formatCurrency(data.buyCumulativeProfitOnDeposits)}\n----------------------------------------\n= Cumulative Market Returns: ${formatCurrency(data.buyCumulativeMarketReturns)}`}>
-                    {data.buyCumulativeMarketReturns >= 0 ? "+" : ""}{formatCurrency(data.buyCumulativeMarketReturns)}
-                  </MathTooltip>
-                </span>
-              </div>
-              <div className="row" style={{ fontSize: "0.85rem", color: "#94a3b8", paddingLeft: "16px" }}>
-                <span>Cumulative Housing Savings:</span>
-                <span className="positive">
-                  <MathTooltip ledger={`  Sum of (Max Monthly Budget - Actual Buy Cost)\n  deposited over ${selectedYear * 12} months.\n\n  Example from final month of Year ${selectedYear}:\n    Max Budget: ${formatCurrency(data.finalMaxBudget)}\n  - Buy Cost:  -${formatCurrency(data.finalMonthlyHouseCost)}\n  = Savings:    ${formatCurrency(data.finalMaxBudget - data.finalMonthlyHouseCost)}\n\n  Average Monthly Savings (All Years): ${formatCurrency(data.buyCumulativeSavings / (selectedYear * 12))}\n* Total Months Elapsed:                ${selectedYear * 12}\n----------------------------------------\n= Cumulative Housing Savings:          ${formatCurrency(data.buyCumulativeSavings)}`}>
-                    +{formatCurrency(data.buyCumulativeSavings)}
-                  </MathTooltip>
-                </span>
-              </div>
-              <div className="row" style={{ fontSize: "0.85rem", color: "#94a3b8", paddingLeft: "16px" }}>
-                <span>Cumulative Appreciation:</span>
-                <span className={data.cumulativeAppreciationUser >= 0 ? "positive" : "negative"}>
-                  <MathTooltip ledger={`  Current Property Value:    ${formatCurrency(data.currentHomeValueUser / data.userEquityShare)}\n- Original Purchase Price: -${formatCurrency(data.purchasePrice)}\n= Total Appreciation:        ${formatCurrency((data.currentHomeValueUser / data.userEquityShare) - data.purchasePrice)}\n* Your Equity Share:         ${data.userEquityShare * 100}%\n----------------------------------------\n= Cumulative Appreciation:   ${formatCurrency(data.cumulativeAppreciationUser)}`}>
-                    {data.cumulativeAppreciationUser >= 0 ? "+" : ""}{formatCurrency(data.cumulativeAppreciationUser)}
-                  </MathTooltip>
-                </span>
-              </div>
-              <div className="row" style={{ fontSize: "0.85rem", color: "#94a3b8", paddingLeft: "16px", marginBottom: "8px" }}>
-                <span>Cumulative Principal Paydown:</span>
-                <span className="positive">
-                  <MathTooltip ledger={`  Original Loan Balance:     ${formatCurrency(data.remainingLoanTotal + (data.cumulativePrincipalPaydownUser / data.userEquityShare))}\n- Current Loan Balance:    -${formatCurrency(data.remainingLoanTotal)}\n= Total Principal Paydown:   ${formatCurrency(data.cumulativePrincipalPaydownUser / data.userEquityShare)}\n* Your Equity Share:         ${data.userEquityShare * 100}%\n----------------------------------------\n= Cumulative Principal Paydown: ${formatCurrency(data.cumulativePrincipalPaydownUser)}`}>
-                    +{formatCurrency(data.cumulativePrincipalPaydownUser)}
-                  </MathTooltip>
-                </span>
-              </div>
-              <div className="row" style={{ marginBottom: "16px", borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: "8px" }}>
-                <span style={{ fontWeight: "bold" }}>Resulting Net Worth (Year {selectedYear}):</span>
-                <span className="positive" style={{ fontWeight: "bold" }}>
-                  <MathTooltip ledger={`  Starting Net Worth:        ${formatCurrency(data.STARTING_CASH)}\n- Initial Closing Costs:   -${formatCurrency(data.initialClosingCostsUser)}\n+ Market Returns:          +${formatCurrency(data.buyCumulativeMarketReturns)}\n+ Housing Savings:         +${formatCurrency(data.buyCumulativeSavings)}\n+ Property Appreciation:   +${formatCurrency(data.cumulativeAppreciationUser)}\n+ Principal Paydown:       +${formatCurrency(data.cumulativePrincipalPaydownUser)}\n----------------------------------------\n= Resulting Net Worth:       ${formatCurrency(data.buyNetWorth)}`}>
-                    {formatCurrency(data.buyNetWorth)}
-                  </MathTooltip>
-                </span>
-              </div>
-            </div>
-
-            {/* MIDDLE 2: Balances */}
-            <div style={{ background: "rgba(0,0,0,0.2)", padding: "16px", borderRadius: "12px", marginBottom: "16px", border: "1px solid rgba(255,255,255,0.05)" }}>
-              <div style={{ fontWeight: "bold", marginBottom: "12px", color: "#2dd4bf" }}>Where is this wealth stored today?</div>
-              <div className="row">
-                <span>Current Liquid Cash:</span>
-                <span className={data.buyLiquidCash >= 0 ? "positive" : "negative"}>
-                  <MathTooltip ledger={`  Starting Cash:             ${formatCurrency(data.STARTING_CASH)}\n- Down Payment:            -${formatCurrency(data.initialDownPaymentUser)}\n- Closing Costs:           -${formatCurrency(data.initialClosingCostsUser)}\n----------------------------------------\n= Day 1 Liquid Cash:         ${formatCurrency(data.STARTING_CASH - data.initialDownPaymentUser - data.initialClosingCostsUser)}\n\n+ Housing Savings:         +${formatCurrency(data.buyCumulativeSavings)}\n+ Market Returns:          +${formatCurrency(data.buyCumulativeMarketReturns)}\n----------------------------------------\n= Current Liquid Cash:       ${formatCurrency(data.buyLiquidCash)}`}>
-                    {formatCurrency(data.buyLiquidCash)}
-                  </MathTooltip>
-                </span>
-              </div>
-              <div className="row" style={{ marginTop: "8px" }}>
-                <span>Current Gross Equity:</span>
-                <span className="positive">
-                  <MathTooltip ledger={`  Initial Down Payment:      ${formatCurrency(data.initialDownPaymentUser)}\n+ Property Appreciation:   +${formatCurrency(data.cumulativeAppreciationUser)}\n+ Principal Paydown:       +${formatCurrency(data.cumulativePrincipalPaydownUser)}\n----------------------------------------\n= Current Gross Equity:      ${formatCurrency(data.userHomeEquity)}`}>
-                    {formatCurrency(data.userHomeEquity)}
-                  </MathTooltip>
-                </span>
-              </div>
-              <div className="row" style={{ fontSize: "0.85rem", color: "#94a3b8", paddingLeft: "16px", marginTop: "8px" }}>
-                <span>└─ Net Proceeds If Sold:</span>
-                <span className="positive">
-                  <MathTooltip ledger={`  Current Gross Equity:      ${formatCurrency(data.userHomeEquity)}\n- Seller Closing Costs (6%):-${formatCurrency(data.sellerClosingCostsUser)}\n----------------------------------------\n= Net Proceeds If Sold:      ${formatCurrency(data.userNetProceeds)}`}>
-                    {formatCurrency(data.userNetProceeds)}
-                  </MathTooltip>
-                </span>
-              </div>
-            </div>
-            
-            {/* MIDDLE 3: This Year's Impact */}
-            <div style={{ background: "rgba(0,0,0,0.2)", padding: "16px", borderRadius: "12px", marginBottom: "16px", border: "1px solid rgba(255,255,255,0.05)" }}>
-              <div style={{ fontWeight: "bold", marginBottom: "12px", color: "#a855f7" }}>This Year's Impact (Year {selectedYear} Only):</div>
-              <div className="row" style={{ fontSize: "0.9rem" }}>
-                <span>Starting Net Worth (Year {selectedYear - 1}):</span>
+              <div style={{ fontWeight: "bold", marginBottom: "12px", color: "#a855f7" }}>Year {selectedYear} Waterfall:</div>
+              <div className="row" style={{ fontSize: "0.95rem" }}>
+                <span>Starting Net Worth (Jan 1):</span>
                 <span className="positive">
                   <MathTooltip ledger={`Net Worth at the end of Year ${selectedYear - 1}.\n(Or Adjusted Day-1 Net Worth if Year 1)`}>
                     {formatCurrency(data.prevYearNetWorthBuy)}
@@ -550,10 +442,40 @@ function OpportunityCostTab({
                 </span>
               </div>
               <div className="row" style={{ borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: "8px" }}>
-                <span style={{ fontWeight: "bold" }}>Resulting Net Worth (Year {selectedYear}):</span>
-                <span className="positive" style={{ fontWeight: "bold" }}>
-                  <MathTooltip ledger={`Matches Total Net Worth.`}>
+                <span style={{ fontWeight: "bold", fontSize: "0.95rem" }}>Ending Net Worth (Dec 31):</span>
+                <span className="positive" style={{ fontWeight: "bold", fontSize: "0.95rem" }}>
+                  <MathTooltip ledger={`Matches Total Net Worth below.`}>
                     {formatCurrency(data.buyNetWorth)}
+                  </MathTooltip>
+                </span>
+              </div>
+            </div>
+
+            {/* BOTTOM: Total Accumulated Wealth */}
+            <div style={{ background: "rgba(0,0,0,0.2)", padding: "16px", borderRadius: "12px", marginBottom: "16px", border: "1px solid rgba(255,255,255,0.05)" }}>
+              <div style={{ fontWeight: "bold", marginBottom: "12px", color: "#2dd4bf" }}>Total Accumulated Wealth:</div>
+              <div className="row">
+                <span>Liquid Cash Portfolio:</span>
+                <span className={data.buyLiquidCash >= 0 ? "positive" : "negative"}>
+                  <MathTooltip ledger={`  Starting Cash:             ${formatCurrency(data.STARTING_CASH)}\n- Down Payment:            -${formatCurrency(data.initialDownPaymentUser)}\n- Closing Costs:           -${formatCurrency(data.initialClosingCostsUser)}\n----------------------------------------\n= Day 1 Liquid Cash:         ${formatCurrency(data.STARTING_CASH - data.initialDownPaymentUser - data.initialClosingCostsUser)}\n\n+ Cumulative Savings:      +${formatCurrency(data.buyCumulativeSavings)}\n+ Cumulative Returns:      +${formatCurrency(data.buyCumulativeMarketReturns)}\n----------------------------------------\n= Current Liquid Cash:       ${formatCurrency(data.buyLiquidCash)}`}>
+                    {formatCurrency(data.buyLiquidCash)}
+                  </MathTooltip>
+                </span>
+              </div>
+              <div className="row" style={{ marginTop: "8px" }}>
+                <span>Home Equity (If Sold Today):</span>
+                <span className="positive">
+                  <MathTooltip ledger={`  Current Gross Equity:      ${formatCurrency(data.userHomeEquity)}\n- Seller Closing Costs (6%):-${formatCurrency(data.sellerClosingCostsUser)}\n----------------------------------------\n= Net Proceeds If Sold:      ${formatCurrency(data.userNetProceeds)}`}>
+                    {formatCurrency(data.userNetProceeds)}
+                  </MathTooltip>
+                </span>
+              </div>
+              <hr style={{ borderColor: "rgba(255,255,255,0.1)", margin: "12px 0" }} />
+              <div className="row total">
+                <span style={{ fontSize: "1.1rem" }}>Total Net Worth:</span>
+                <span className="positive" style={{ fontSize: "1.3rem" }}>
+                  <MathTooltip ledger={`  Liquid Cash:          ${formatCurrency(data.buyLiquidCash)}\n+ Net Proceeds if Sold: ${formatCurrency(data.userNetProceeds)}\n--------------------------------\n= Total Net Worth:      ${formatCurrency(data.buyTotalLiquid)}`}>
+                    {formatCurrency(data.buyTotalLiquid)}
                   </MathTooltip>
                 </span>
               </div>
@@ -612,79 +534,11 @@ function OpportunityCostTab({
             Path B: Rent & Invest
           </div>
           <div className="card-body">
-            {/* TOP: Current Snapshot */}
-            <div className="row total" style={{ marginBottom: "8px" }}>
-              <span style={{ fontSize: "1.1rem" }}>Total Net Worth:</span>
-              <span className="positive" style={{ fontSize: "1.3rem" }}>
-                <MathTooltip ledger={`  Current Liquid Cash:  ${formatCurrency(data.stockPortfolio)}\n------------------------------\n= Total Net Worth:    ${formatCurrency(data.stockPortfolio)}`}>
-                  {formatCurrency(data.stockPortfolio)}
-                </MathTooltip>
-              </span>
-            </div>
-            <div className="row total">
-              <span style={{ fontSize: "1.1rem" }}>Total Liquid (If Sold Today):</span>
-              <span className="positive" style={{ fontSize: "1.3rem" }}>
-                <MathTooltip ledger={`  Current Liquid Cash:  ${formatCurrency(data.stockPortfolio)}\n------------------------------\n= Total Liquid:       ${formatCurrency(data.stockPortfolio)}`}>
-                  {formatCurrency(data.stockPortfolio)}
-                </MathTooltip>
-              </span>
-            </div>
-
-            <hr style={{ borderColor: "rgba(255,255,255,0.1)", margin: "16px 0" }} />
-
-            {/* MIDDLE 1: Cumulative Net Worth Waterfall */}
+            {/* TOP: This Year's Waterfall */}
             <div style={{ background: "rgba(0,0,0,0.2)", padding: "16px", borderRadius: "12px", marginBottom: "16px", border: "1px solid rgba(255,255,255,0.05)" }}>
-              <div style={{ fontWeight: "bold", marginBottom: "12px", color: "#60a5fa" }}>Cumulative Net Worth Waterfall (Day 1 ➔ Year {selectedYear}):</div>
-              <div className="row">
-                <span>Starting Net Worth (Day 1):</span>
-                <span className="positive">
-                  {formatCurrency(data.STARTING_CASH)}
-                </span>
-              </div>
-              <div className="row" style={{ fontSize: "0.85rem", color: "#94a3b8", paddingLeft: "16px", marginBottom: "8px" }}>
-                <span>Cumulative Market Returns:</span>
-                <span className={data.rentCumulativeMarketReturns >= 0 ? "positive" : "negative"}>
-                  <MathTooltip ledger={`  Interest on Day 1 Liquid Cash:\n    ${formatCurrency(data.rentDay1Cash)} compounding at ${stockMarketReturn}% APY for ${selectedYear} years\n  = ${formatCurrency(data.rentCumulativeProfitOnDay1)}\n\n  Interest on Housing Savings Deposits:\n    ${formatCurrency(data.rentCumulativeSavings)} deposited over ${selectedYear * 12} months\n  = ${formatCurrency(data.rentCumulativeProfitOnDeposits)}\n----------------------------------------\n= Cumulative Market Returns: ${formatCurrency(data.rentCumulativeMarketReturns)}`}>
-                    {data.rentCumulativeMarketReturns >= 0 ? "+" : ""}{formatCurrency(data.rentCumulativeMarketReturns)}
-                  </MathTooltip>
-                </span>
-              </div>
-              <div className="row" style={{ fontSize: "0.85rem", color: "#94a3b8", paddingLeft: "16px", marginBottom: "8px" }}>
-                <span>Cumulative Housing Savings:</span>
-                <span className="positive">
-                  <MathTooltip ledger={`  Sum of (Max Monthly Budget - Actual Rent Cost)\n  deposited over ${selectedYear * 12} months.\n\n  Example from final month of Year ${selectedYear}:\n    Max Budget: ${formatCurrency(data.finalMaxBudget)}\n  - Rent Cost: -${formatCurrency(data.finalMonthlyRentCost)}\n  = Savings:    ${formatCurrency(data.finalMaxBudget - data.finalMonthlyRentCost)}\n\n  Average Monthly Savings (All Years): ${formatCurrency(data.rentCumulativeSavings / (selectedYear * 12))}\n* Total Months Elapsed:                ${selectedYear * 12}\n----------------------------------------\n= Cumulative Housing Savings:          ${formatCurrency(data.rentCumulativeSavings)}`}>
-                    +{formatCurrency(data.rentCumulativeSavings)}
-                  </MathTooltip>
-                </span>
-              </div>
-              <div className="row" style={{ marginBottom: "16px", borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: "8px" }}>
-                <span style={{ fontWeight: "bold" }}>Resulting Net Worth (Year {selectedYear}):</span>
-                <span className="positive" style={{ fontWeight: "bold" }}>
-                  <MathTooltip ledger={`  Starting Net Worth:        ${formatCurrency(data.STARTING_CASH)}\n+ Market Returns:          +${formatCurrency(data.rentCumulativeMarketReturns)}\n+ Housing Savings:         +${formatCurrency(data.rentCumulativeSavings)}\n----------------------------------------\n= Resulting Net Worth:       ${formatCurrency(data.stockPortfolio)}`}>
-                    {formatCurrency(data.stockPortfolio)}
-                  </MathTooltip>
-                </span>
-              </div>
-            </div>
-
-            {/* MIDDLE 2: Balances */}
-            <div style={{ background: "rgba(0,0,0,0.2)", padding: "16px", borderRadius: "12px", marginBottom: "16px", border: "1px solid rgba(255,255,255,0.05)" }}>
-              <div style={{ fontWeight: "bold", marginBottom: "12px", color: "#2dd4bf" }}>Where is this wealth stored today?</div>
-              <div className="row">
-                <span>Current Liquid Cash:</span>
-                <span className={data.stockPortfolio >= 0 ? "positive" : "negative"}>
-                  <MathTooltip ledger={`  Starting Cash:             ${formatCurrency(data.STARTING_CASH)}\n  (No Down Payment or Closing Costs)\n----------------------------------------\n= Day 1 Liquid Cash:         ${formatCurrency(data.STARTING_CASH)}\n\n+ Housing Savings:         +${formatCurrency(data.rentCumulativeSavings)}\n+ Market Returns:          +${formatCurrency(data.rentCumulativeMarketReturns)}\n----------------------------------------\n= Current Liquid Cash:       ${formatCurrency(data.stockPortfolio)}`}>
-                    {formatCurrency(data.stockPortfolio)}
-                  </MathTooltip>
-                </span>
-              </div>
-            </div>
-            
-            {/* MIDDLE 3: This Year's Impact */}
-            <div style={{ background: "rgba(0,0,0,0.2)", padding: "16px", borderRadius: "12px", marginBottom: "16px", border: "1px solid rgba(255,255,255,0.05)" }}>
-              <div style={{ fontWeight: "bold", marginBottom: "12px", color: "#a855f7" }}>This Year's Impact (Year {selectedYear} Only):</div>
-              <div className="row" style={{ fontSize: "0.9rem" }}>
-                <span>Starting Net Worth (Year {selectedYear - 1}):</span>
+              <div style={{ fontWeight: "bold", marginBottom: "12px", color: "#a855f7" }}>Year {selectedYear} Waterfall:</div>
+              <div className="row" style={{ fontSize: "0.95rem" }}>
+                <span>Starting Net Worth (Jan 1):</span>
                 <span className="positive">
                   <MathTooltip ledger={`Net Worth at the end of Year ${selectedYear - 1}.`}>
                     {formatCurrency(data.prevYearNetWorthRent)}
@@ -708,9 +562,31 @@ function OpportunityCostTab({
                 </span>
               </div>
               <div className="row" style={{ borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: "8px" }}>
-                <span style={{ fontWeight: "bold" }}>Resulting Net Worth (Year {selectedYear}):</span>
-                <span className="positive" style={{ fontWeight: "bold" }}>
-                  <MathTooltip ledger={`Matches Total Net Worth.`}>
+                <span style={{ fontWeight: "bold", fontSize: "0.95rem" }}>Ending Net Worth (Dec 31):</span>
+                <span className="positive" style={{ fontWeight: "bold", fontSize: "0.95rem" }}>
+                  <MathTooltip ledger={`Matches Total Net Worth below.`}>
+                    {formatCurrency(data.stockPortfolio)}
+                  </MathTooltip>
+                </span>
+              </div>
+            </div>
+
+            {/* BOTTOM: Total Accumulated Wealth */}
+            <div style={{ background: "rgba(0,0,0,0.2)", padding: "16px", borderRadius: "12px", marginBottom: "16px", border: "1px solid rgba(255,255,255,0.05)" }}>
+              <div style={{ fontWeight: "bold", marginBottom: "12px", color: "#2dd4bf" }}>Total Accumulated Wealth:</div>
+              <div className="row">
+                <span>Liquid Cash Portfolio:</span>
+                <span className={data.stockPortfolio >= 0 ? "positive" : "negative"}>
+                  <MathTooltip ledger={`  Starting Cash:             ${formatCurrency(data.STARTING_CASH)}\n  (No Down Payment or Closing Costs)\n----------------------------------------\n= Day 1 Liquid Cash:         ${formatCurrency(data.STARTING_CASH)}\n\n+ Cumulative Savings:      +${formatCurrency(data.rentCumulativeSavings)}\n+ Cumulative Returns:      +${formatCurrency(data.rentCumulativeMarketReturns)}\n----------------------------------------\n= Current Liquid Cash:       ${formatCurrency(data.stockPortfolio)}`}>
+                    {formatCurrency(data.stockPortfolio)}
+                  </MathTooltip>
+                </span>
+              </div>
+              <hr style={{ borderColor: "rgba(255,255,255,0.1)", margin: "12px 0" }} />
+              <div className="row total">
+                <span style={{ fontSize: "1.1rem" }}>Total Net Worth:</span>
+                <span className="positive" style={{ fontSize: "1.3rem" }}>
+                  <MathTooltip ledger={`  Current Liquid Cash:  ${formatCurrency(data.stockPortfolio)}\n------------------------------\n= Total Net Worth:    ${formatCurrency(data.stockPortfolio)}`}>
                     {formatCurrency(data.stockPortfolio)}
                   </MathTooltip>
                 </span>
