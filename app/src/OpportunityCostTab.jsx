@@ -54,7 +54,9 @@ function OpportunityCostTab({
 
     // Track Stock Market Portfolio value month by month (Rent Side)
     let stockPortfolio = STARTING_CASH;
-    const monthlyStockRate = stockMarketReturn / 100 / 12;
+    const monthlyHouseAppreciation = Math.pow(1 + appreciation / 100, 1 / 12) - 1;
+    // Use true APY (CAGR) for stock market, which is more accurate to reality than dividing APR by 12.
+    const monthlyStockRate = Math.pow(1 + stockMarketReturn / 100, 1 / 12) - 1;
 
     // Track Liquid Cash value month by month (Buy Side)
     let buyLiquidCash = STARTING_CASH - totalInitialSunkUser;
@@ -281,6 +283,7 @@ function OpportunityCostTab({
       remainingLoanTotal,
       finalMonthlyHouseCost,
       finalMonthlyRentCost,
+      finalMaxBudget: Math.max(finalMonthlyHouseCost, finalMonthlyRentCost),
       initialDownPaymentUser,
       initialClosingCostsUser,
       purchasePrice,
@@ -430,7 +433,7 @@ function OpportunityCostTab({
               <div className="row" style={{ fontSize: "0.85rem", color: "#94a3b8", paddingLeft: "16px" }}>
                 <span>Cumulative Housing Savings:</span>
                 <span className="positive">
-                  <MathTooltip ledger={`  Total Months Elapsed:        ${selectedYear * 12}\n* Average Monthly Savings:   ${formatCurrency(data.buyCumulativeSavings / (selectedYear * 12))}\n  (Max Monthly Budget - Actual Buy Cost)\n----------------------------------------\n= Cumulative Housing Savings: ${formatCurrency(data.buyCumulativeSavings)}`}>
+                  <MathTooltip ledger={`  Sum of (Max Monthly Budget - Actual Buy Cost)\n  deposited over ${selectedYear * 12} months.\n\n  Example from final month of Year ${selectedYear}:\n    Max Budget: ${formatCurrency(data.finalMaxBudget)}\n  - Buy Cost:  -${formatCurrency(data.finalMonthlyHouseCost)}\n  = Savings:    ${formatCurrency(data.finalMaxBudget - data.finalMonthlyHouseCost)}\n\n  Average Monthly Savings (All Years): ${formatCurrency(data.buyCumulativeSavings / (selectedYear * 12))}\n* Total Months Elapsed:                ${selectedYear * 12}\n----------------------------------------\n= Cumulative Housing Savings:          ${formatCurrency(data.buyCumulativeSavings)}`}>
                     +{formatCurrency(data.buyCumulativeSavings)}
                   </MathTooltip>
                 </span>
@@ -512,7 +515,7 @@ function OpportunityCostTab({
               <div className="row" style={{ fontSize: "0.9rem", color: "#94a3b8", paddingLeft: "16px" }}>
                 <span>+ Housing Savings this year:</span>
                 <span className="positive">
-                  <MathTooltip ledger={`  Months Elapsed This Year:  12\n* Average Monthly Savings: ${formatCurrency(data.buySavingsThisYear / 12)}\n  (Max Budget - Actual Buy Cost)\n----------------------------------------\n= Housing Savings this year: ${formatCurrency(data.buySavingsThisYear)}`}>
+                  <MathTooltip ledger={`  Example from final month of Year ${selectedYear}:\n    Max Budget: ${formatCurrency(data.finalMaxBudget)}\n  - Buy Cost:  -${formatCurrency(data.finalMonthlyHouseCost)}\n  = Savings:    ${formatCurrency(data.finalMaxBudget - data.finalMonthlyHouseCost)}\n\n  Average Monthly Savings (This Year): ${formatCurrency(data.buySavingsThisYear / 12)}\n* Months Elapsed This Year:            12\n----------------------------------------\n= Housing Savings this year:           ${formatCurrency(data.buySavingsThisYear)}`}>
                     +{formatCurrency(data.buySavingsThisYear)}
                   </MathTooltip>
                 </span>
@@ -636,7 +639,7 @@ function OpportunityCostTab({
               <div className="row" style={{ fontSize: "0.85rem", color: "#94a3b8", paddingLeft: "16px", marginBottom: "8px" }}>
                 <span>Cumulative Housing Savings:</span>
                 <span className="positive">
-                  <MathTooltip ledger={`  Total Months Elapsed:        ${selectedYear * 12}\n* Average Monthly Savings:   ${formatCurrency(data.rentCumulativeSavings / (selectedYear * 12))}\n  (Max Monthly Budget - Actual Rent Cost)\n----------------------------------------\n= Cumulative Housing Savings: ${formatCurrency(data.rentCumulativeSavings)}`}>
+                  <MathTooltip ledger={`  Sum of (Max Monthly Budget - Actual Rent Cost)\n  deposited over ${selectedYear * 12} months.\n\n  Example from final month of Year ${selectedYear}:\n    Max Budget: ${formatCurrency(data.finalMaxBudget)}\n  - Rent Cost: -${formatCurrency(data.finalMonthlyRentCost)}\n  = Savings:    ${formatCurrency(data.finalMaxBudget - data.finalMonthlyRentCost)}\n\n  Average Monthly Savings (All Years): ${formatCurrency(data.rentCumulativeSavings / (selectedYear * 12))}\n* Total Months Elapsed:                ${selectedYear * 12}\n----------------------------------------\n= Cumulative Housing Savings:          ${formatCurrency(data.rentCumulativeSavings)}`}>
                     +{formatCurrency(data.rentCumulativeSavings)}
                   </MathTooltip>
                 </span>
@@ -686,7 +689,7 @@ function OpportunityCostTab({
               <div className="row" style={{ fontSize: "0.9rem", color: "#94a3b8", paddingLeft: "16px", marginBottom: "8px" }}>
                 <span>+ Housing Savings this year:</span>
                 <span className="positive">
-                  <MathTooltip ledger={`  Months Elapsed This Year:  12\n* Average Monthly Savings: ${formatCurrency(data.rentSavingsThisYear / 12)}\n  (Max Budget - Actual Rent Cost)\n----------------------------------------\n= Housing Savings this year: ${formatCurrency(data.rentSavingsThisYear)}`}>
+                  <MathTooltip ledger={`  Example from final month of Year ${selectedYear}:\n    Max Budget: ${formatCurrency(data.finalMaxBudget)}\n  - Rent Cost: -${formatCurrency(data.finalMonthlyRentCost)}\n  = Savings:    ${formatCurrency(data.finalMaxBudget - data.finalMonthlyRentCost)}\n\n  Average Monthly Savings (This Year): ${formatCurrency(data.rentSavingsThisYear / 12)}\n* Months Elapsed This Year:            12\n----------------------------------------\n= Housing Savings this year:           ${formatCurrency(data.rentSavingsThisYear)}`}>
                     +{formatCurrency(data.rentSavingsThisYear)}
                   </MathTooltip>
                 </span>
