@@ -425,7 +425,7 @@ function OpportunityCostTab({
               <div className="row" style={{ fontSize: "0.85rem", color: "#94a3b8", paddingLeft: "16px" }}>
                 <span>Cumulative Market Returns:</span>
                 <span className={data.buyCumulativeMarketReturns >= 0 ? "positive" : "negative"}>
-                  <MathTooltip ledger={`  Current Liquid Cash:         ${formatCurrency(data.buyLiquidCash)}\n- Day 1 Liquid Cash:         -${formatCurrency(data.STARTING_CASH - data.initialDownPaymentUser - data.initialClosingCostsUser)}\n- Total Savings Deposited:   -${formatCurrency(data.buyCumulativeSavings)}\n----------------------------------------\n= Cumulative Market Returns: ${formatCurrency(data.buyCumulativeMarketReturns)}`}>
+                  <MathTooltip ledger={`  Compound Interest Profit generated from:\n  1) Day 1 Liquid Cash:        ${formatCurrency(data.STARTING_CASH - data.initialDownPaymentUser - data.initialClosingCostsUser)}\n  2) Housing Savings Deposits: ${formatCurrency(data.buyCumulativeSavings)}\n  Compounding at ${stockMarketReturn}% APY over ${selectedYear * 12} months.\n----------------------------------------\n= Cumulative Market Returns: ${formatCurrency(data.buyCumulativeMarketReturns)}`}>
                     {data.buyCumulativeMarketReturns >= 0 ? "+" : ""}{formatCurrency(data.buyCumulativeMarketReturns)}
                   </MathTooltip>
                 </span>
@@ -631,7 +631,7 @@ function OpportunityCostTab({
               <div className="row" style={{ fontSize: "0.85rem", color: "#94a3b8", paddingLeft: "16px" }}>
                 <span>Cumulative Market Returns:</span>
                 <span className={data.rentCumulativeMarketReturns >= 0 ? "positive" : "negative"}>
-                  <MathTooltip ledger={`  Current Liquid Cash:         ${formatCurrency(data.stockPortfolio)}\n- Day 1 Liquid Cash:         -${formatCurrency(data.STARTING_CASH)}\n- Total Savings Deposited:   -${formatCurrency(data.rentCumulativeSavings)}\n----------------------------------------\n= Cumulative Market Returns: ${formatCurrency(data.rentCumulativeMarketReturns)}`}>
+                  <MathTooltip ledger={`  Compound Interest Profit generated from:\n  1) Day 1 Liquid Cash:        ${formatCurrency(data.STARTING_CASH)}\n  2) Housing Savings Deposits: ${formatCurrency(data.rentCumulativeSavings)}\n  Compounding at ${stockMarketReturn}% APY over ${selectedYear * 12} months.\n----------------------------------------\n= Cumulative Market Returns: ${formatCurrency(data.rentCumulativeMarketReturns)}`}>
                     {data.rentCumulativeMarketReturns >= 0 ? "+" : ""}{formatCurrency(data.rentCumulativeMarketReturns)}
                   </MathTooltip>
                 </span>
