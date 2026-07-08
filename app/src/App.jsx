@@ -32,6 +32,7 @@ function App() {
   const [hoaInflation, setHoaInflation] = useState(4.0);
   const [appreciation, setAppreciation] = useState(3.0);
   const [moveOutYear, setMoveOutYear] = useState(5);
+  const [operatingExpenseRate, setOperatingExpenseRate] = useState(0.75);
 
   const totalRent = isRental ? tenantRent : userRent + brotherRent;
 
@@ -139,8 +140,7 @@ function App() {
   const rentalHOA = currentHOAAnnual * llcShare;
 
   // Operating expenses as a % of property value (covers cleaning, repairs, travel, insurance)
-  const operatingExpenseRate = 0.0075; // 0.75% of property value per year
-  const totalOperatingExpenses = purchasePrice * operatingExpenseRate;
+  const totalOperatingExpenses = purchasePrice * (operatingExpenseRate / 100);
   const userShareOfOperatingExpenses = totalOperatingExpenses * llcShare;
 
   const totalRentalDeductions =
@@ -428,6 +428,29 @@ function App() {
               {appreciation.toFixed(1)}%
             </div>
           </div>
+          {isRental && (
+            <div
+              className="slider-group"
+              style={{ flex: 1, minWidth: "150px" }}
+            >
+              <label style={{ fontSize: "0.8rem" }}>OpEx (% of Value/Yr)</label>
+              <input
+                type="range"
+                min="0.1"
+                max="3.0"
+                step="0.05"
+                value={operatingExpenseRate}
+                onChange={(e) =>
+                  setOperatingExpenseRate(Number(e.target.value))
+                }
+                className="slider red-slider"
+                style={{ width: "100%" }}
+              />
+              <div className="rent-value" style={{ fontSize: "0.9rem" }}>
+                {operatingExpenseRate.toFixed(2)}%
+              </div>
+            </div>
+          )}
           <div className="slider-group" style={{ flex: 1, minWidth: "150px" }}>
             <label style={{ fontSize: "0.8rem" }}>Move-Out Year</label>
             <input

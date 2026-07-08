@@ -195,8 +195,8 @@ function TaxTab({
               >
                 <div className="row" style={{ marginBottom: "8px" }}>
                   <span>
-                    Estimated at {(operatingExpenseRate * 100).toFixed(2)}% of
-                    property value:
+                    Estimated at {operatingExpenseRate.toFixed(2)}% of property
+                    value:
                   </span>
                   <span style={{ color: "#e2e8f0", fontWeight: "bold" }}>
                     {formatCurrency(userShareOfOperatingExpenses)}/yr
