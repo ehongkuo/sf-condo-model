@@ -470,7 +470,7 @@ function OpportunityCostTab({
               <div className="row">
                 <span>Current Liquid Cash:</span>
                 <span className={data.buyLiquidCash >= 0 ? "positive" : "negative"}>
-                  <MathTooltip ledger={`  Day 1 Liquid Cash:         ${formatCurrency(data.STARTING_CASH - data.initialDownPaymentUser - data.initialClosingCostsUser)}\n+ Housing Savings:         +${formatCurrency(data.buyCumulativeSavings)}\n+ Market Returns:          +${formatCurrency(data.buyCumulativeMarketReturns)}\n----------------------------------------\n= Current Liquid Cash:       ${formatCurrency(data.buyLiquidCash)}`}>
+                  <MathTooltip ledger={`  Starting Cash:             ${formatCurrency(data.STARTING_CASH)}\n- Down Payment:            -${formatCurrency(data.initialDownPaymentUser)}\n- Closing Costs:           -${formatCurrency(data.initialClosingCostsUser)}\n----------------------------------------\n= Day 1 Liquid Cash:         ${formatCurrency(data.STARTING_CASH - data.initialDownPaymentUser - data.initialClosingCostsUser)}\n\n+ Housing Savings:         +${formatCurrency(data.buyCumulativeSavings)}\n+ Market Returns:          +${formatCurrency(data.buyCumulativeMarketReturns)}\n----------------------------------------\n= Current Liquid Cash:       ${formatCurrency(data.buyLiquidCash)}`}>
                     {formatCurrency(data.buyLiquidCash)}
                   </MathTooltip>
                 </span>
@@ -660,7 +660,7 @@ function OpportunityCostTab({
               <div className="row">
                 <span>Current Liquid Cash:</span>
                 <span className={data.stockPortfolio >= 0 ? "positive" : "negative"}>
-                  <MathTooltip ledger={`  Day 1 Liquid Cash:         ${formatCurrency(data.STARTING_CASH)}\n+ Housing Savings:         +${formatCurrency(data.rentCumulativeSavings)}\n+ Market Returns:          +${formatCurrency(data.rentCumulativeMarketReturns)}\n----------------------------------------\n= Current Liquid Cash:       ${formatCurrency(data.stockPortfolio)}`}>
+                  <MathTooltip ledger={`  Starting Cash:             ${formatCurrency(data.STARTING_CASH)}\n  (No Down Payment or Closing Costs)\n----------------------------------------\n= Day 1 Liquid Cash:         ${formatCurrency(data.STARTING_CASH)}\n\n+ Housing Savings:         +${formatCurrency(data.rentCumulativeSavings)}\n+ Market Returns:          +${formatCurrency(data.rentCumulativeMarketReturns)}\n----------------------------------------\n= Current Liquid Cash:       ${formatCurrency(data.stockPortfolio)}`}>
                     {formatCurrency(data.stockPortfolio)}
                   </MathTooltip>
                 </span>
