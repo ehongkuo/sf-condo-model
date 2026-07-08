@@ -5,7 +5,7 @@ const MathTooltip = ({ children, ledger }) => {
 
   return (
     <div 
-      style={{ position: 'relative', display: 'inline-block' }}
+      style={{ position: 'relative', display: 'inline-block', zIndex: isHovered ? 9999 : 1 }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -27,7 +27,7 @@ const MathTooltip = ({ children, ledger }) => {
           whiteSpace: 'pre',
           fontFamily: 'monospace',
           fontSize: '0.85rem',
-          zIndex: 50,
+          zIndex: 99999,
           border: '1px solid rgba(255,255,255,0.1)',
           pointerEvents: 'none',
           minWidth: 'max-content',
