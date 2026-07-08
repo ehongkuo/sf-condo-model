@@ -162,7 +162,8 @@ function App() {
   // Calculate cumulative tax savings from LLC losses up to selectedYear
   const cumulativeTaxSavings = useMemo(() => {
     let cumulative = 0;
-    for (let i = 1; i <= selectedYear; i++) {
+    const startYear = moveOutYear + 1;
+    for (let i = startYear; i <= selectedYear; i++) {
       const yearData = amortizationSchedule[i - 1] || { interest: 0 };
       const yInterest = yearData.interest * llcShare;
 
@@ -198,6 +199,7 @@ function App() {
     userShareOfOperatingExpenses,
     totalRent,
     userShareOfRentIncome,
+    moveOutYear,
   ]);
 
   // The actual applied tax shield (added to net cash flow)
