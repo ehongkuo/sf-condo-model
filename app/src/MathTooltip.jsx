@@ -1,42 +1,56 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 
 const MathTooltip = ({ children, ledger }) => {
   const [isHovered, setIsHovered] = useState(false);
+  const [coords, setCoords] = useState({ top: 0, left: 0 });
+  const spanRef = useRef(null);
+
+  useEffect(() => {
+    if (isHovered && spanRef.current) {
+      const rect = spanRef.current.getBoundingClientRect();
+      setCoords({
+        left: rect.left + rect.width / 2,
+        top: rect.top + window.scrollY,
+      });
+    }
+  }, [isHovered]);
 
   return (
-    <div 
-      style={{ position: 'relative', display: 'inline-block', zIndex: isHovered ? 9999 : 1 }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      <span style={{ borderBottom: '1px dotted rgba(255,255,255,0.4)', cursor: 'help' }}>
+    <>
+      <span 
+        ref={spanRef}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        style={{ borderBottom: '1px dotted rgba(255,255,255,0.4)', cursor: 'help' }}
+      >
         {children}
       </span>
-      {isHovered && ledger && (
+      {isHovered && ledger && createPortal(
         <div style={{
           position: 'absolute',
-          bottom: '100%',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          marginBottom: '8px',
+          top: coords.top - 8,
+          left: coords.left,
+          transform: 'translate(-50%, -100%)',
           background: '#1e293b',
           color: '#f8fafc',
           padding: '12px',
           borderRadius: '8px',
-          boxShadow: '0 10px 15px -3px rgba(0,0,0,0.5)',
+          boxShadow: '0 10px 25px -5px rgba(0,0,0,0.8)',
           whiteSpace: 'pre',
           fontFamily: 'monospace',
           fontSize: '0.85rem',
-          zIndex: 99999,
-          border: '1px solid rgba(255,255,255,0.1)',
+          zIndex: 999999,
+          border: '1px solid rgba(255,255,255,0.2)',
           pointerEvents: 'none',
           minWidth: 'max-content',
           textAlign: 'left'
         }}>
           {ledger}
-        </div>
+        </div>,
+        document.body
       )}
-    </div>
+    </>
   );
 };
 
