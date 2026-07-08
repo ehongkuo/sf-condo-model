@@ -353,9 +353,8 @@ function OpportunityCostTab({
             <hr
               style={{ borderColor: "rgba(255,255,255,0.1)", margin: "16px 0" }}
             />
-
             <div className="row">
-              <span>Your Liquid Cash (Invested):</span>{" "}
+              <span>Your Liquid Cash (Invested at {stockMarketReturn}%):</span>{" "}
               <span
                 className={data.buyLiquidCash >= 0 ? "positive" : "negative"}
               >
@@ -385,48 +384,48 @@ function OpportunityCostTab({
             />
 
             <div className="row total">
-              <span style={{ fontSize: "1.2rem" }}>Total Net Worth:</span>{" "}
+              <span style={{ fontSize: "1.1rem" }}>
+                Total Liquid (If Sold Today):
+              </span>{" "}
               <span className="positive" style={{ fontSize: "1.5rem" }}>
                 {formatCurrency(data.buyNetWorth)}
               </span>
             </div>
+          </div>
 
-            <div
-              style={{
-                background: "rgba(0,0,0,0.2)",
-                padding: "12px",
-                borderRadius: "8px",
-                marginTop: "16px",
-              }}
-            >
-              <div style={{ fontWeight: "bold", marginBottom: "8px" }}>
-                Monthly Reality (Year {selectedYear}):
-              </div>
-              <div className="row">
-                <span>Phase:</span>{" "}
-                <span style={{ color: "#e2e8f0" }}>
-                  {selectedYear > moveOutYear
-                    ? "Rental (LLC)"
-                    : "Owner-Occupied"}
-                </span>
-              </div>
-              <div className="row">
-                <span>Current Monthly Net Cost:</span>{" "}
-                <span
-                  className={
-                    data.finalMonthlyHouseCost <= 0 ? "positive" : "negative"
-                  }
-                >
-                  {data.finalMonthlyHouseCost <= 0 ? "+" : "-"}
-                  {formatCurrency(Math.abs(data.finalMonthlyHouseCost))}/mo
-                </span>
-              </div>
-              <div className="row">
-                <span>Cumulative House Cash Burned:</span>{" "}
-                <span className="negative">
-                  -{formatCurrency(data.totalHouseCashBurned)}
-                </span>
-              </div>
+          <div
+            style={{
+              background: "rgba(0,0,0,0.2)",
+              padding: "12px",
+              borderRadius: "8px",
+              marginTop: "16px",
+            }}
+          >
+            <div style={{ fontWeight: "bold", marginBottom: "8px" }}>
+              Monthly Reality (Year {selectedYear}):
+            </div>
+            <div className="row">
+              <span>Phase:</span>{" "}
+              <span style={{ color: "#e2e8f0" }}>
+                {selectedYear > moveOutYear ? "Rental (LLC)" : "Owner-Occupied"}
+              </span>
+            </div>
+            <div className="row">
+              <span>Current Monthly Net Cost:</span>{" "}
+              <span
+                className={
+                  data.finalMonthlyHouseCost <= 0 ? "positive" : "negative"
+                }
+              >
+                {data.finalMonthlyHouseCost <= 0 ? "+" : "-"}
+                {formatCurrency(Math.abs(data.finalMonthlyHouseCost))}/mo
+              </span>
+            </div>
+            <div className="row">
+              <span>Cumulative House Cash Burned:</span>{" "}
+              <span className="negative">
+                -{formatCurrency(data.totalHouseCashBurned)}
+              </span>
             </div>
           </div>
         </div>
@@ -480,7 +479,7 @@ function OpportunityCostTab({
             />
 
             <div className="row">
-              <span>Your Liquid Cash (Invested):</span>{" "}
+              <span>Your Liquid Cash (Invested at {stockMarketReturn}%):</span>{" "}
               <span
                 className={data.stockPortfolio >= 0 ? "positive" : "negative"}
               >
@@ -498,7 +497,9 @@ function OpportunityCostTab({
             />
 
             <div className="row total">
-              <span style={{ fontSize: "1.2rem" }}>Total Net Worth:</span>{" "}
+              <span style={{ fontSize: "1.1rem" }}>
+                Total Liquid (If Sold Today):
+              </span>{" "}
               <span className="positive" style={{ fontSize: "1.5rem" }}>
                 {formatCurrency(data.stockPortfolio)}
               </span>
