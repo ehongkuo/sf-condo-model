@@ -127,47 +127,67 @@ function App() {
   const annualTaxSavings = incrementalDeduction * marginalRate;
   const userTaxShieldScheduleA = annualTaxSavings / 12;
 
-  // --- Rental (Schedule E) ---
+  // --- Rental (LLC Partnership — 1/3 split, REPS active losses) ---
+  const llcShare = 1 / 3;
   const buildingRatio = 0.8;
-  const depreciationBasis = purchasePrice * buildingRatio; // Always based on purchase price
+  const depreciationBasis = purchasePrice * buildingRatio;
   const annualDepreciation = depreciationBasis / 27.5;
-  const userShareOfDepreciation = annualDepreciation / 2;
+  const userShareOfDepreciation = annualDepreciation * llcShare;
 
-  const rentalInterest = totalInterestForYear / 2;
-  const rentalPropertyTax = propertyTaxAnnual / 2;
-  const rentalHOA = currentHOAAnnual / 2;
+  const rentalInterest = totalInterestForYear * llcShare;
+  const rentalPropertyTax = propertyTaxAnnual * llcShare;
+  const rentalHOA = currentHOAAnnual * llcShare;
+
+  // Operating expenses (annual totals for the whole LLC)
+  const annualCleaning = 2400;
+  const annualRepairs = 3000;
+  const annualTravel = 1200;
+  const annualInsurance = 1800;
+  const totalOperatingExpenses =
+    annualCleaning + annualRepairs + annualTravel + annualInsurance;
+  const userShareOfOperatingExpenses = totalOperatingExpenses * llcShare;
+
   const totalRentalDeductions =
-    rentalInterest + rentalPropertyTax + rentalHOA + userShareOfDepreciation;
+    rentalInterest +
+    rentalPropertyTax +
+    rentalHOA +
+    userShareOfDepreciation +
+    userShareOfOperatingExpenses;
 
-  const rentalIncome = (totalRent * 12) / 2;
+  const rentalIncome = totalRent * 12 * llcShare;
   const netRentalIncome = rentalIncome - totalRentalDeductions;
 
-  // If profit, we owe tax. If loss, it's suspended (no immediate tax benefit, so 0 cost/benefit)
-  const rentalTaxImpact =
-    netRentalIncome >= 0 ? netRentalIncome * marginalRate : 0;
-  const monthlyRentalTaxCost = rentalTaxImpact / 12;
+  // LLC + REPS: losses are NON-PASSIVE and offset W-2 income
+  // If profit, we owe tax. If loss, we GET a tax refund (reduces W-2 taxes).
+  const rentalTaxImpact = netRentalIncome * marginalRate; // positive = owe, negative = savings
+  const monthlyRentalTaxCost = rentalTaxImpact / 12; // positive = cost, negative = savings
 
-  // Calculate cumulative suspended losses up to selectedYear
-  const cumulativeSuspendedLoss = useMemo(() => {
+  // Calculate cumulative tax savings from LLC losses up to selectedYear
+  const cumulativeTaxSavings = useMemo(() => {
     let cumulative = 0;
     for (let i = 1; i <= selectedYear; i++) {
       const yearData = amortizationSchedule[i - 1] || { interest: 0 };
-      const yInterest = yearData.interest / 2;
+      const yInterest = yearData.interest * llcShare;
 
       const yPropTaxAnnual =
         basePropertyTaxAnnual * Math.pow(1.02, i > 1 ? i - 1 : 0);
-      const yPropTax = yPropTaxAnnual / 2;
+      const yPropTax = yPropTaxAnnual * llcShare;
 
       const yHOAAnnual =
         baseHOA * 12 * Math.pow(1 + hoaInflation / 100, i > 1 ? i - 1 : 0);
-      const yHOA = yHOAAnnual / 2;
+      const yHOA = yHOAAnnual * llcShare;
 
-      const yDeductions = yInterest + yPropTax + yHOA + userShareOfDepreciation;
-      const yIncome = (totalRent * 12) / 2;
+      const yDeductions =
+        yInterest +
+        yPropTax +
+        yHOA +
+        userShareOfDepreciation +
+        userShareOfOperatingExpenses;
+      const yIncome = totalRent * 12 * llcShare;
       const yNet = yIncome - yDeductions;
 
       if (yNet < 0) {
-        cumulative += Math.abs(yNet);
+        cumulative += Math.abs(yNet) * marginalRate;
       }
     }
     return cumulative;
@@ -178,14 +198,16 @@ function App() {
     baseHOA,
     hoaInflation,
     userShareOfDepreciation,
+    userShareOfOperatingExpenses,
     totalRent,
   ]);
 
   // The actual applied tax shield (added to net cash flow)
-  // Owner: positive savings. Rental: negative cost (if profit), or 0 (if loss).
+  // Owner: positive savings from Schedule A.
+  // Rental LLC: if loss → positive savings (reduces W-2 tax). If profit → negative cost.
   const appliedTaxShield = includeTaxSavings
     ? isRental
-      ? -monthlyRentalTaxCost
+      ? -monthlyRentalTaxCost // negative * negative = positive savings; or negative cost if profit
       : userTaxShieldScheduleA
     : 0;
 
@@ -595,18 +617,24 @@ function App() {
             annualTaxSavings={annualTaxSavings}
             userTaxShield={userTaxShieldScheduleA}
 
-            // Rental props passed down from App
+            // Rental LLC props passed down from App
             purchasePrice={purchasePrice}
             rentalInterest={rentalInterest}
             rentalPropertyTax={rentalPropertyTax}
             rentalHOA={rentalHOA}
             userShareOfDepreciation={userShareOfDepreciation}
+            userShareOfOperatingExpenses={userShareOfOperatingExpenses}
+            annualCleaning={annualCleaning}
+            annualRepairs={annualRepairs}
+            annualTravel={annualTravel}
+            annualInsurance={annualInsurance}
             totalRentalDeductions={totalRentalDeductions}
             rentalIncome={rentalIncome}
             netRentalIncome={netRentalIncome}
             rentalTaxImpact={rentalTaxImpact}
             monthlyRentalTaxCost={monthlyRentalTaxCost}
-            cumulativeSuspendedLoss={cumulativeSuspendedLoss}
+            cumulativeTaxSavings={cumulativeTaxSavings}
+            llcShare={llcShare}
           />
         )}
 
