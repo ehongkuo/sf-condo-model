@@ -7,7 +7,9 @@ import {
   TrendingUp,
   Clock,
   Scale,
+  Info,
 } from "lucide-react";
+import { EditableSlider } from "./EditableSlider";
 import CashFlowTab from "./CashFlowTab";
 import LoanTab from "./LoanTab";
 import TaxTab from "./TaxTab";
@@ -291,18 +293,18 @@ function App() {
                 }}
               >
                 <span style={{ fontWeight: "bold", color: "#f8fafc" }}>
-                  Projection Year: {selectedYear}
+                  Projection Year Showdown
                 </span>
               </div>
-              <input
-                type="range"
-                min="1"
-                max="30"
-                step="1"
+              <EditableSlider
+                label=""
                 value={selectedYear}
-                onChange={(e) => setSelectedYear(Number(e.target.value))}
+                setValue={setSelectedYear}
+                min={1}
+                max={30}
+                step={1}
+                format="years"
                 className="slider blue-slider"
-                style={{ width: "100%", margin: 0 }}
               />
             </div>
           </div>
@@ -376,177 +378,97 @@ function App() {
 
         {/* Bottom Row: Global Sliders */}
         <div style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
-          <div className="slider-group" style={{ flex: 1, minWidth: "150px" }}>
-            <label style={{ fontSize: "0.8rem" }}>Purchase Price</label>
-            <input
-              type="range"
-              min="800000"
-              max="3000000"
-              step="10000"
-              value={purchasePrice}
-              onChange={(e) => setPurchasePrice(Number(e.target.value))}
-              className="slider"
-              style={{ width: "100%" }}
-            />
-            <div className="rent-value" style={{ fontSize: "0.9rem" }}>
-              {formatCurrency(purchasePrice)}
-            </div>
-          </div>
-          <div className="slider-group" style={{ flex: 1, minWidth: "150px" }}>
-            <label style={{ fontSize: "0.8rem" }}>Interest Rate</label>
-            <input
-              type="range"
-              min="0.0"
-              max="10.0"
-              step="0.125"
-              value={interestRate}
-              onChange={(e) => setInterestRate(Number(e.target.value))}
-              className="slider"
-              style={{ width: "100%" }}
-            />
-            <div className="rent-value" style={{ fontSize: "0.9rem" }}>
-              {interestRate.toFixed(3)}%
-            </div>
-          </div>
-          <div className="slider-group" style={{ flex: 1, minWidth: "150px" }}>
-            <label style={{ fontSize: "0.8rem" }}>HOA Inflation</label>
-            <input
-              type="range"
-              min="2"
-              max="10"
-              step="0.5"
-              value={hoaInflation}
-              onChange={(e) => setHoaInflation(Number(e.target.value))}
-              className="slider purple-slider"
-              style={{ width: "100%" }}
-            />
-            <div className="rent-value" style={{ fontSize: "0.9rem" }}>
-              {hoaInflation.toFixed(1)}%
-            </div>
-          </div>
-          <div className="slider-group" style={{ flex: 1, minWidth: "150px" }}>
-            <label style={{ fontSize: "0.8rem" }}>Appreciation</label>
-            <input
-              type="range"
-              min="-5"
-              max="15"
-              step="0.5"
-              value={appreciation}
-              onChange={(e) => setAppreciation(Number(e.target.value))}
-              className="slider blue-slider"
-              style={{ width: "100%" }}
-            />
-            <div className="rent-value" style={{ fontSize: "0.9rem" }}>
-              {appreciation.toFixed(1)}%
-            </div>
-          </div>
+          <EditableSlider
+            label="Purchase Price"
+            value={purchasePrice}
+            setValue={setPurchasePrice}
+            min={100000}
+            max={1500000}
+            step={10000}
+            format="currency"
+          />
+          <EditableSlider
+            label="Interest Rate"
+            value={interestRate}
+            setValue={setInterestRate}
+            min={0.0}
+            max={10.0}
+            step={0.125}
+            format="percentage"
+          />
+          <EditableSlider
+            label="HOA Inflation"
+            value={hoaInflation}
+            setValue={setHoaInflation}
+            min={2}
+            max={10}
+            step={0.5}
+            format="percentage"
+            className="slider purple-slider"
+          />
+          <EditableSlider
+            label="Appreciation"
+            value={appreciation}
+            setValue={setAppreciation}
+            min={-5}
+            max={15}
+            step={0.5}
+            format="percentage"
+            className="slider blue-slider"
+          />
           {isRental && (
-            <div
-              className="slider-group"
-              style={{ flex: 1, minWidth: "150px" }}
-            >
-              <label style={{ fontSize: "0.8rem" }}>OpEx (% of Value/Yr)</label>
-              <input
-                type="range"
-                min="0.1"
-                max="3.0"
-                step="0.05"
-                value={operatingExpenseRate}
-                onChange={(e) =>
-                  setOperatingExpenseRate(Number(e.target.value))
-                }
-                className="slider red-slider"
-                style={{ width: "100%" }}
-              />
-              <div className="rent-value" style={{ fontSize: "0.9rem" }}>
-                {operatingExpenseRate.toFixed(2)}%
-              </div>
-            </div>
-          )}
-          <div className="slider-group" style={{ flex: 1, minWidth: "150px" }}>
-            <label style={{ fontSize: "0.8rem" }}>Move-Out Year</label>
-            <input
-              type="range"
-              min="2"
-              max="10"
-              step="1"
-              value={moveOutYear}
-              onChange={(e) => setMoveOutYear(Number(e.target.value))}
-              className="slider"
-              style={{
-                width: "100%",
-                background: "linear-gradient(90deg, #4ade80, #f87171)",
-              }}
+            <EditableSlider
+              label="OpEx (% of Value/Yr)"
+              value={operatingExpenseRate}
+              setValue={setOperatingExpenseRate}
+              min={0.1}
+              max={3.0}
+              step={0.05}
+              format="percentage"
+              className="slider red-slider"
             />
-            <div className="rent-value" style={{ fontSize: "0.9rem" }}>
-              Year {moveOutYear}
-            </div>
-          </div>
+          )}
+          <EditableSlider
+            label="Move-Out Year"
+            value={moveOutYear}
+            setValue={setMoveOutYear}
+            min={2}
+            max={10}
+            step={1}
+            format="years"
+          />
           {isRental ? (
-            <div
-              className="slider-group"
-              style={{ flex: 1, minWidth: "150px" }}
-            >
-              <label style={{ fontSize: "0.8rem" }}>
-                Tenant Rent (Monthly)
-              </label>
-              <input
-                type="range"
-                min="0"
-                max="15000"
-                step="100"
-                value={tenantRent}
-                onChange={(e) => setTenantRent(Number(e.target.value))}
-                className="slider"
-                style={{
-                  width: "100%",
-                  background: "linear-gradient(90deg, #60a5fa, #a855f7)",
-                }}
-              />
-              <div className="rent-value" style={{ fontSize: "0.9rem" }}>
-                {formatCurrency(tenantRent)}
-              </div>
-            </div>
+            <EditableSlider
+              label="Tenant Rent (Monthly)"
+              value={tenantRent}
+              setValue={setTenantRent}
+              min={0}
+              max={15000}
+              step={100}
+              format="currency/mo"
+            />
           ) : (
             <>
-              <div
-                className="slider-group"
-                style={{ flex: 1, minWidth: "150px" }}
-              >
-                <label style={{ fontSize: "0.8rem" }}>Your Rent</label>
-                <input
-                  type="range"
-                  min="0"
-                  max="10000"
-                  step="100"
-                  value={userRent}
-                  onChange={(e) => setUserRent(Number(e.target.value))}
-                  className="slider blue-slider"
-                  style={{ width: "100%" }}
-                />
-                <div className="rent-value" style={{ fontSize: "0.9rem" }}>
-                  {formatCurrency(userRent)}
-                </div>
-              </div>
-              <div
-                className="slider-group"
-                style={{ flex: 1, minWidth: "150px" }}
-              >
-                <label style={{ fontSize: "0.8rem" }}>Brother's Rent</label>
-                <input
-                  type="range"
-                  min="0"
-                  max="10000"
-                  step="100"
-                  value={brotherRent}
-                  onChange={(e) => setBrotherRent(Number(e.target.value))}
-                  className="slider purple-slider"
-                  style={{ width: "100%" }}
-                />
-                <div className="rent-value" style={{ fontSize: "0.9rem" }}>
-                  {formatCurrency(brotherRent)}
-                </div>
-              </div>
+              <EditableSlider
+                label="Your Rent"
+                value={userRent}
+                setValue={setUserRent}
+                min={0}
+                max={10000}
+                step={100}
+                format="currency/mo"
+                className="slider blue-slider"
+              />
+              <EditableSlider
+                label="Brother's Rent"
+                value={brotherRent}
+                setValue={setBrotherRent}
+                min={0}
+                max={10000}
+                step={100}
+                format="currency/mo"
+                className="slider purple-slider"
+              />
             </>
           )}
         </div>

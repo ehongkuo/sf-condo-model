@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { formatCurrency } from "./utils";
+import { EditableSlider } from "./EditableSlider";
 
 function OpportunityCostTab({
   purchasePrice,
@@ -152,8 +153,9 @@ function OpportunityCostTab({
       totalHouseCashBurned += userNetCostThisMonth;
 
       // --- RENTING COSTS FOR THIS MONTH ---
-      const currentEquivalentRent =
-        equivalentRent * Math.pow(1 + rentInflation / 100, yearIndex);
+      const currentEquivalentRent = isRental
+        ? 0
+        : equivalentRent * Math.pow(1 + rentInflation / 100, yearIndex);
       totalRentCashBurned += currentEquivalentRent;
 
       // Compound the portfolios
@@ -213,6 +215,7 @@ function OpportunityCostTab({
       finalMonthlyRentCost,
       initialDownPaymentUser,
       initialClosingCostsUser,
+      userEquityShare,
     };
   }, [
     purchasePrice,
@@ -251,58 +254,36 @@ function OpportunityCostTab({
             flexWrap: "wrap",
             justifyContent: "center",
             marginTop: "32px",
+            gap: "20px",
           }}
         >
-          <div className="slider-group" style={{ flex: 1, minWidth: "150px" }}>
-            <label style={{ fontSize: "0.8rem" }}>
-              Market Return (S&P 500)
-            </label>
-            <input
-              type="range"
-              min="0"
-              max="15"
-              step="0.5"
-              value={stockMarketReturn}
-              onChange={(e) => setStockMarketReturn(Number(e.target.value))}
-              className="slider purple-slider"
-              style={{ width: "100%" }}
-            />
-            <div className="rent-value" style={{ fontSize: "0.9rem" }}>
-              {stockMarketReturn.toFixed(1)}%
-            </div>
-          </div>
-          <div className="slider-group" style={{ flex: 1, minWidth: "150px" }}>
-            <label style={{ fontSize: "0.8rem" }}>Equivalent Rent</label>
-            <input
-              type="range"
-              min="500"
-              max="5000"
-              step="50"
-              value={equivalentRent}
-              onChange={(e) => setEquivalentRent(Number(e.target.value))}
-              className="slider purple-slider"
-              style={{ width: "100%" }}
-            />
-            <div className="rent-value" style={{ fontSize: "0.9rem" }}>
-              {formatCurrency(equivalentRent)}/mo
-            </div>
-          </div>
-          <div className="slider-group" style={{ flex: 1, minWidth: "150px" }}>
-            <label style={{ fontSize: "0.8rem" }}>Rent Inflation</label>
-            <input
-              type="range"
-              min="0"
-              max="10"
-              step="0.5"
-              value={rentInflation}
-              onChange={(e) => setRentInflation(Number(e.target.value))}
-              className="slider purple-slider"
-              style={{ width: "100%" }}
-            />
-            <div className="rent-value" style={{ fontSize: "0.9rem" }}>
-              {rentInflation.toFixed(1)}%
-            </div>
-          </div>
+          <EditableSlider
+            label="Market Return (S&P 500)"
+            value={stockMarketReturn}
+            setValue={setStockMarketReturn}
+            min={0}
+            max={15}
+            step={0.5}
+            format="percentage"
+          />
+          <EditableSlider
+            label="Equivalent Rent"
+            value={equivalentRent}
+            setValue={setEquivalentRent}
+            min={500}
+            max={5000}
+            step={50}
+            format="currency/mo"
+          />
+          <EditableSlider
+            label="Rent Inflation"
+            value={rentInflation}
+            setValue={setRentInflation}
+            min={0}
+            max={10}
+            step={0.5}
+            format="percentage"
+          />
         </div>
       </div>
 
