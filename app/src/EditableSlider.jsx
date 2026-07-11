@@ -29,29 +29,31 @@ export function EditableSlider({
 
   return (
     <div className="slider-group">
-      {label && (
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            marginBottom: "4px",
-            alignItems: "center",
-          }}
-        >
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          marginBottom: "4px",
+          alignItems: "center",
+        }}
+      >
+        {label ? (
           <label className="slider-label" style={{ margin: 0 }}>
             {label}
           </label>
-          <span
-            style={{
-              fontSize: "0.85rem",
-              color: "#e2e8f0",
-              fontWeight: "bold",
-            }}
-          >
-            {displayValue}
-          </span>
-        </div>
-      )}
+        ) : (
+          <div></div>
+        )}
+        <span
+          style={{
+            fontSize: "0.85rem",
+            color: "#e2e8f0",
+            fontWeight: "bold",
+          }}
+        >
+          {displayValue}
+        </span>
+      </div>
       <input
         type="range"
         min={min}

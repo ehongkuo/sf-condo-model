@@ -306,7 +306,7 @@ body::after {
 }
 
 .controls-drawer.open {
-  max-height: 220px;
+  max-height: 1000px;
   padding: 14px 24px;
   border-bottom-color: var(--border-subtle);
 }
