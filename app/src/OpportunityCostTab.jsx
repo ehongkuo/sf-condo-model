@@ -18,10 +18,11 @@ function OpportunityCostTab({
   moveOutYear,
   selectedYear,
   amortizationSchedule,
+  rentInflation,
+  setRentInflation,
 }) {
   const [stockMarketReturn, setStockMarketReturn] = useState(7.0);
   const [equivalentRent, setEquivalentRent] = useState(3300);
-  const [rentInflation, setRentInflation] = useState(3.0);
 
   // Constants
   const STARTING_CASH = 100000;

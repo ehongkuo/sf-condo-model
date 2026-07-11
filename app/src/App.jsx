@@ -42,12 +42,16 @@ function App() {
   // Global Controls State
   const [purchasePrice, setPurchasePrice] = useState(1050000);
   const [interestRate, setInterestRate] = useState(6.5);
+  const [baseHOA, setBaseHOA] = useState(1556.0);
   const [hoaInflation, setHoaInflation] = useState(4.0);
   const [appreciation, setAppreciation] = useState(3.0);
+  const [rentInflation, setRentInflation] = useState(3.0);
   const [moveOutYear, setMoveOutYear] = useState(5);
   const [operatingExpenseRate, setOperatingExpenseRate] = useState(0.5);
 
-  const totalRent = isRental ? tenantRent : userRent + brotherRent;
+  const totalRent = isRental 
+    ? tenantRent * Math.pow(1 + rentInflation / 100, selectedYear > 1 ? selectedYear - 1 : 0) 
+    : userRent + brotherRent;
 
   // 1. Property Calculations (Base values)
   const downPayment = purchasePrice * 0.2;
@@ -71,7 +75,7 @@ function App() {
     Math.pow(1.02, selectedYear > 1 ? selectedYear - 1 : 0); // Prop 13 cap
   const propertyTax = propertyTaxAnnual / 12;
 
-  const baseHOA = 1556.0;
+
   const currentHOAAnnual =
     baseHOA *
     12 *
@@ -366,10 +370,29 @@ function App() {
             format="percentage"
           />
           <EditableSlider
+            label="Base HOA (Year 1)"
+            value={baseHOA}
+            setValue={setBaseHOA}
+            min={100}
+            max={3000}
+            step={10}
+            format="currency"
+          />
+          <EditableSlider
             label="HOA Inflation"
             value={hoaInflation}
             setValue={setHoaInflation}
             min={2}
+            max={10}
+            step={0.5}
+            format="percentage"
+            className="slider purple-slider"
+          />
+          <EditableSlider
+            label="Rent Inflation"
+            value={rentInflation}
+            setValue={setRentInflation}
+            min={1}
             max={10}
             step={0.5}
             format="percentage"
@@ -556,6 +579,8 @@ function App() {
             moveOutYear={moveOutYear}
             selectedYear={selectedYear}
             amortizationSchedule={amortizationSchedule}
+            rentInflation={rentInflation}
+            setRentInflation={setRentInflation}
           />
         )}
       </main>
