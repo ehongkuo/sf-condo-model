@@ -327,6 +327,23 @@ body::after {
   gap: 16px;
 }
 
+.control-groups-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.group-title {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  font-weight: 600;
+  letter-spacing: 1px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 6px;
+}
+
 /* ============================================================
    8. MAIN CONTENT
    ============================================================ */

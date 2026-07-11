@@ -350,119 +350,139 @@ function App() {
         </div>
 
         {/* Row 2: Global sliders grid */}
-        <div className="controls-grid">
-          <EditableSlider
-            label="Purchase Price"
-            value={purchasePrice}
-            setValue={setPurchasePrice}
-            min={900000}
-            max={1500000}
-            step={10000}
-            format="currency"
-          />
-          <EditableSlider
-            label="Interest Rate"
-            value={interestRate}
-            setValue={setInterestRate}
-            min={5.5}
-            max={7.5}
-            step={0.125}
-            format="percentage"
-          />
-          <EditableSlider
-            label="Base HOA (Year 1)"
-            value={baseHOA}
-            setValue={setBaseHOA}
-            min={500}
-            max={2500}
-            step={10}
-            format="currency"
-          />
-          <EditableSlider
-            label="HOA Inflation"
-            value={hoaInflation}
-            setValue={setHoaInflation}
-            min={2}
-            max={10}
-            step={0.5}
-            format="percentage"
-            className="slider purple-slider"
-          />
-          <EditableSlider
-            label="Rent Inflation"
-            value={rentInflation}
-            setValue={setRentInflation}
-            min={1}
-            max={10}
-            step={0.5}
-            format="percentage"
-            className="slider purple-slider"
-          />
-          <EditableSlider
-            label="Appreciation"
-            value={appreciation}
-            setValue={setAppreciation}
-            min={-5}
-            max={15}
-            step={0.5}
-            format="percentage"
-            className="slider blue-slider"
-          />
-          {isRental && (
-            <EditableSlider
-              label="OpEx (% of Value/Yr)"
-              value={operatingExpenseRate}
-              setValue={setOperatingExpenseRate}
-              min={0.1}
-              max={3.0}
-              step={0.05}
-              format="percentage"
-              className="slider red-slider"
-            />
-          )}
-          <EditableSlider
-            label="Move-Out Year"
-            value={moveOutYear}
-            setValue={setMoveOutYear}
-            min={2}
-            max={10}
-            step={1}
-            format="years"
-          />
-          {isRental ? (
-            <EditableSlider
-              label="Tenant Rent (Monthly)"
-              value={tenantRent}
-              setValue={setTenantRent}
-              min={5500}
-              max={9000}
-              step={100}
-              format="currency/mo"
-            />
-          ) : (
-            <>
+        <div className="control-groups-container">
+          {/* Group 1: Property Settings */}
+          <div>
+            <div className="group-title">Property Settings</div>
+            <div className="controls-grid">
               <EditableSlider
-                label="Your Rent"
-                value={userRent}
-                setValue={setUserRent}
-                min={2500}
-                max={4000}
-                step={100}
-                format="currency/mo"
+                label="Purchase Price"
+                value={purchasePrice}
+                setValue={setPurchasePrice}
+                min={900000}
+                max={1500000}
+                step={10000}
+                format="currency"
+              />
+              <EditableSlider
+                label="Interest Rate"
+                value={interestRate}
+                setValue={setInterestRate}
+                min={5.5}
+                max={7.5}
+                step={0.125}
+                format="percentage"
+              />
+              <EditableSlider
+                label="Appreciation"
+                value={appreciation}
+                setValue={setAppreciation}
+                min={-5}
+                max={15}
+                step={0.5}
+                format="percentage"
                 className="slider blue-slider"
               />
               <EditableSlider
-                label="Brother's Rent"
-                value={brotherRent}
-                setValue={setBrotherRent}
-                min={2500}
-                max={4000}
-                step={100}
-                format="currency/mo"
+                label="Move-Out Year"
+                value={moveOutYear}
+                setValue={setMoveOutYear}
+                min={2}
+                max={10}
+                step={1}
+                format="years"
+              />
+            </div>
+          </div>
+
+          {/* Group 2: HOA & Expenses */}
+          <div>
+            <div className="group-title">HOA & Expenses</div>
+            <div className="controls-grid">
+              <EditableSlider
+                label="Base HOA (Year 1)"
+                value={baseHOA}
+                setValue={setBaseHOA}
+                min={500}
+                max={2500}
+                step={10}
+                format="currency"
+              />
+              <EditableSlider
+                label="HOA Inflation"
+                value={hoaInflation}
+                setValue={setHoaInflation}
+                min={2}
+                max={10}
+                step={0.5}
+                format="percentage"
                 className="slider purple-slider"
               />
-            </>
-          )}
+              {isRental && (
+                <EditableSlider
+                  label="OpEx (% of Value/Yr)"
+                  value={operatingExpenseRate}
+                  setValue={setOperatingExpenseRate}
+                  min={0.1}
+                  max={3.0}
+                  step={0.05}
+                  format="percentage"
+                  className="slider red-slider"
+                />
+              )}
+            </div>
+          </div>
+
+          {/* Group 3: Rent & Usage */}
+          <div>
+            <div className="group-title">Rent & Usage</div>
+            <div className="controls-grid">
+              <EditableSlider
+                label="Rent Inflation"
+                value={rentInflation}
+                setValue={setRentInflation}
+                min={1}
+                max={10}
+                step={0.5}
+                format="percentage"
+                className="slider purple-slider"
+              />
+              {isRental ? (
+                <EditableSlider
+                  label="Tenant Rent (Monthly)"
+                  value={tenantRent}
+                  setValue={setTenantRent}
+                  min={5500}
+                  max={9000}
+                  step={100}
+                  format="currency/mo"
+                />
+              ) : (
+                <>
+                  <EditableSlider
+                    label="Your Rent"
+                    value={userRent}
+                    setValue={setUserRent}
+                    min={2500}
+                    max={4000}
+                    step={100}
+                    format="currency/mo"
+                    className="slider blue-slider"
+                  />
+                  <EditableSlider
+                    label="Brother's Rent"
+                    value={brotherRent}
+                    setValue={setBrotherRent}
+                    min={2500}
+                    max={4000}
+                    step={100}
+                    format="currency/mo"
+                    className="slider purple-slider"
+                  />
+                </>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
