@@ -357,6 +357,15 @@ body::after {
   flex: 1;
 }
 
+.tab-page-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 24px;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 12px;
+}
+
 /* Custom scrollbar — main content */
 .main-content::-webkit-scrollbar {
   width: 6px;

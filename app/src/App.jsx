@@ -488,6 +488,13 @@ function App() {
 
       {/* ─── MAIN CONTENT ─── */}
       <main className="main-content">
+        <h2 className="tab-page-title">
+          {activeTab === "cashflow" && "Monthly Cash Flow"}
+          {activeTab === "loan" && "Loan Details"}
+          {activeTab === "taxes" && "Tax Implications"}
+          {activeTab === "longterm" && "Long-Term Equity"}
+          {activeTab === "opportunity" && "Opportunity Cost"}
+        </h2>
         {activeTab === "cashflow" && (
           <CashFlowTab
             isRental={isRental}
