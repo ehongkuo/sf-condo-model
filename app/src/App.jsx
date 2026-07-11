@@ -285,20 +285,20 @@ function App() {
         <div className="topbar-right">
           <div className="topbar-badges">
             <div className="year-badge-container">
-              <span className="topbar-badge" style={{ cursor: "pointer" }}>
+              <div className="year-text">
                 <Clock size={13} />
                 Year {selectedYear}
-              </span>
-              <div className="year-slider-popup">
-                <EditableSlider
-                  label={`Adjust Year: ${selectedYear}`}
-                  value={selectedYear}
-                  setValue={setSelectedYear}
+              </div>
+              <div className="year-slider-inline">
+                <input
+                  type="range"
                   min={1}
                   max={30}
                   step={1}
-                  format="years"
+                  value={selectedYear}
+                  onChange={(e) => setSelectedYear(Number(e.target.value))}
                   className="slider blue-slider"
+                  style={{ width: "100%", margin: 0 }}
                 />
               </div>
             </div>

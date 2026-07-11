@@ -257,44 +257,51 @@ body::after {
 }
 
 .year-badge-container {
-  position: relative;
-  display: inline-flex;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  max-width: 75px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
 }
 
-.year-slider-popup {
-  position: absolute;
-  top: calc(100% + 10px);
-  left: 50%;
-  transform: translateX(-50%) translateY(10px);
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-subtle);
-  border-radius: 12px;
-  padding: 16px;
-  width: 250px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+.year-badge-container:hover {
+  max-width: 250px;
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.year-text {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.year-slider-inline {
   opacity: 0;
+  width: 140px;
+  flex-shrink: 0;
+  margin-left: 12px;
+  transition: opacity 0.2s ease;
   pointer-events: none;
-  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  z-index: 200;
+  display: flex;
+  align-items: center;
 }
 
-.year-badge-container:hover .year-slider-popup {
+.year-badge-container:hover .year-slider-inline {
   opacity: 1;
   pointer-events: auto;
-  transform: translateX(-50%) translateY(0);
-}
-
-.year-slider-popup::before {
-  content: '';
-  position: absolute;
-  top: -6px;
-  left: 50%;
-  transform: translateX(-50%) rotate(45deg);
-  width: 12px;
-  height: 12px;
-  background: var(--bg-secondary);
-  border-left: 1px solid var(--border-subtle);
-  border-top: 1px solid var(--border-subtle);
+  transition-delay: 0.1s;
 }
 
 /* ============================================================
