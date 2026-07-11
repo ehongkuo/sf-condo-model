@@ -34,7 +34,7 @@ function App() {
   const [hoaInflation, setHoaInflation] = useState(4.0);
   const [appreciation, setAppreciation] = useState(3.0);
   const [moveOutYear, setMoveOutYear] = useState(5);
-  const [operatingExpenseRate, setOperatingExpenseRate] = useState(0.75);
+  const [operatingExpenseRate, setOperatingExpenseRate] = useState(0.5);
 
   const totalRent = isRental ? tenantRent : userRent + brotherRent;
 
@@ -130,20 +130,22 @@ function App() {
   const annualTaxSavings = incrementalDeduction * marginalRate;
   const userTaxShieldScheduleA = annualTaxSavings / 12;
 
-  // --- Rental (LLC Partnership — 1/3 split, REPS active losses) ---
-  const llcShare = 1 / 3;
+  // --- Rental (LLC Partnership — 25% cash flow, 50% tax benefits, REPS active losses) ---
+  const llcCashFlowShare = 0.25;
+  const llcTaxShare = 0.50;
+  
   const buildingRatio = 0.8;
   const depreciationBasis = purchasePrice * buildingRatio;
   const annualDepreciation = depreciationBasis / 27.5;
-  const userShareOfDepreciation = annualDepreciation * llcShare;
+  const userShareOfDepreciation = annualDepreciation * llcTaxShare;
 
-  const rentalInterest = totalInterestForYear * llcShare;
-  const rentalPropertyTax = propertyTaxAnnual * llcShare;
-  const rentalHOA = currentHOAAnnual * llcShare;
+  const rentalInterest = totalInterestForYear * llcTaxShare;
+  const rentalPropertyTax = propertyTaxAnnual * llcTaxShare;
+  const rentalHOA = currentHOAAnnual * llcTaxShare;
 
   // Operating expenses as a % of property value (covers cleaning, repairs, travel, insurance)
   const totalOperatingExpenses = purchasePrice * (operatingExpenseRate / 100);
-  const userShareOfOperatingExpenses = totalOperatingExpenses * llcShare;
+  const userShareOfOperatingExpenses = totalOperatingExpenses * llcTaxShare;
 
   const totalRentalDeductions =
     rentalInterest +
@@ -152,13 +154,14 @@ function App() {
     userShareOfDepreciation +
     userShareOfOperatingExpenses;
 
-  const userShareOfRentIncome = llcShare; // 33.3% split for LLC
-  const rentalIncome = totalRent * 12 * userShareOfRentIncome;
-  const netRentalIncome = rentalIncome - totalRentalDeductions;
+  // IRS sees brothers receiving 100% of rent (50% each) because Dad is under the table
+  const userShareOfRentIncomeTax = llcTaxShare; 
+  const rentalIncomeTax = totalRent * 12 * userShareOfRentIncomeTax;
+  const netRentalIncomeTax = rentalIncomeTax - totalRentalDeductions;
 
   // LLC + REPS: losses are NON-PASSIVE and offset W-2 income
   // If profit, we owe tax. If loss, we GET a tax refund (reduces W-2 taxes).
-  const rentalTaxImpact = netRentalIncome * marginalRate; // positive = owe, negative = savings
+  const rentalTaxImpact = netRentalIncomeTax * marginalRate; // positive = owe, negative = savings
   const monthlyRentalTaxCost = rentalTaxImpact / 12; // positive = cost, negative = savings
 
   // Calculate cumulative tax savings from LLC losses up to selectedYear
@@ -167,15 +170,15 @@ function App() {
     const startYear = moveOutYear + 1;
     for (let i = startYear; i <= selectedYear; i++) {
       const yearData = amortizationSchedule[i - 1] || { interest: 0 };
-      const yInterest = yearData.interest * llcShare;
+      const yInterest = yearData.interest * llcTaxShare;
 
       const yPropTaxAnnual =
         basePropertyTaxAnnual * Math.pow(1.02, i > 1 ? i - 1 : 0);
-      const yPropTax = yPropTaxAnnual * llcShare;
+      const yPropTax = yPropTaxAnnual * llcTaxShare;
 
       const yHOAAnnual =
         baseHOA * 12 * Math.pow(1 + hoaInflation / 100, i > 1 ? i - 1 : 0);
-      const yHOA = yHOAAnnual * llcShare;
+      const yHOA = yHOAAnnual * llcTaxShare;
 
       const yDeductions =
         yInterest +
@@ -183,7 +186,7 @@ function App() {
         yHOA +
         userShareOfDepreciation +
         userShareOfOperatingExpenses;
-      const yIncome = totalRent * 12 * userShareOfRentIncome;
+      const yIncome = totalRent * 12 * userShareOfRentIncomeTax;
       const yNet = yIncome - yDeductions;
 
       if (yNet < 0) {
@@ -200,8 +203,9 @@ function App() {
     userShareOfDepreciation,
     userShareOfOperatingExpenses,
     totalRent,
-    userShareOfRentIncome,
+    userShareOfRentIncomeTax,
     moveOutYear,
+    llcTaxShare,
   ]);
 
   // The actual applied tax shield (added to net cash flow)
@@ -214,25 +218,24 @@ function App() {
     : 0;
 
   // 4. Distributions
-  // Owner occupied: Dad 50%, User 25%, Brother 25%
-  // Rental (LLC): Dad 33.3%, User 33.3%, Brother 33.3%
-  const dadRentIncome = isRental ? totalRent * llcShare : totalRent * 0.5;
+  // Cash flow is permanently 50% Dad, 25% User, 25% Brother
+  const dadRentIncome = totalRent * 0.5;
   const dadExpenses = isRental
-    ? (propertyCosts + totalOperatingExpenses / 12) * llcShare
+    ? (propertyCosts + totalOperatingExpenses / 12) * 0.5
     : propertyCosts * 0.5;
   const dadNet = dadRentIncome - dadExpenses;
 
-  const userRentIncome = isRental ? totalRent * llcShare : totalRent * 0.25;
+  const userRentIncome = totalRent * 0.25;
   const userExpenses = isRental
-    ? (propertyCosts + totalOperatingExpenses / 12) * llcShare
+    ? (propertyCosts + totalOperatingExpenses / 12) * llcCashFlowShare
     : propertyCosts * 0.25;
   const userNet = isRental
     ? userRentIncome - userExpenses + appliedTaxShield
     : userRentIncome - userRent - userExpenses + appliedTaxShield;
 
-  const brotherRentIncome = isRental ? totalRent * llcShare : totalRent * 0.25;
+  const brotherRentIncome = totalRent * 0.25;
   const brotherExpenses = isRental
-    ? (propertyCosts + totalOperatingExpenses / 12) * llcShare
+    ? (propertyCosts + totalOperatingExpenses / 12) * llcCashFlowShare
     : propertyCosts * 0.25;
   const brotherNet = isRental
     ? brotherRentIncome - brotherExpenses + appliedTaxShield
@@ -581,13 +584,13 @@ function App() {
             totalOperatingExpenses={totalOperatingExpenses}
             operatingExpenseRate={operatingExpenseRate}
             totalRentalDeductions={totalRentalDeductions}
-            rentalIncome={rentalIncome}
-            netRentalIncome={netRentalIncome}
+            rentalIncome={rentalIncomeTax}
+            netRentalIncome={netRentalIncomeTax}
             rentalTaxImpact={rentalTaxImpact}
             monthlyRentalTaxCost={monthlyRentalTaxCost}
             cumulativeTaxSavings={cumulativeTaxSavings}
-            llcShare={llcShare}
-            userShareOfRentIncome={userShareOfRentIncome}
+            llcShare={llcTaxShare}
+            userShareOfRentIncome={userShareOfRentIncomeTax}
           />
         )}
 

@@ -63,12 +63,10 @@ function TaxTab({
           </div>
           <div className="card-body">
             <p style={{ color: "#e2e8f0", marginBottom: "16px" }}>
-              Your family LLC has <strong>3 equal members (33.3% each)</strong>:
-              You, your Brother, and your Dad. Because Dad is retired and
-              qualifies as a <strong>Real Estate Professional</strong>, rental
-              losses flow through your K-1 as{" "}
-              <strong style={{ color: "#4ade80" }}>non-passive income</strong> —
-              meaning they can offset your W-2 wages.
+              Your family LLC has <strong>2 equal members ({(llcShare * 100).toFixed(0)}% each)</strong>:
+              You and your Brother. Because Dad is paying and receiving his portion
+              under the table, he is not on the title or the LLC. This means the IRS sees
+              you and your brother splitting 100% of the income and 100% of the deductions.
             </p>
             <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
               <div
@@ -80,7 +78,7 @@ function TaxTab({
                   fontSize: "0.9rem",
                 }}
               >
-                👤 You — 33.3% Member (W-2)
+                👤 You — 50% Member
               </div>
               <div
                 style={{
@@ -91,18 +89,7 @@ function TaxTab({
                   fontSize: "0.9rem",
                 }}
               >
-                👤 Brother — 33.3% Member (W-2)
-              </div>
-              <div
-                style={{
-                  padding: "8px 16px",
-                  borderRadius: "8px",
-                  background: "rgba(74, 222, 128, 0.15)",
-                  border: "1px solid rgba(74, 222, 128, 0.3)",
-                  fontSize: "0.9rem",
-                }}
-              >
-                👴 Dad — 33.3% Member (REPS ✓)
+                👤 Brother — 50% Member
               </div>
             </div>
           </div>
@@ -125,7 +112,7 @@ function TaxTab({
                   <CheckCircle color="#4ade80" size={20} /> Mortgage Interest
                 </div>
                 <div className="tax-item-amount">
-                  {formatCurrency(rentalInterest / 12)} / mo (your 33.3%)
+                  {formatCurrency(rentalInterest / 12)} / mo (your {(llcShare * 100).toFixed(0)}%)
                 </div>
                 <div className="tax-item-note">
                   No $750k TCJA cap — it's a business expense now.
@@ -136,7 +123,7 @@ function TaxTab({
                   <CheckCircle color="#4ade80" size={20} /> Property Tax
                 </div>
                 <div className="tax-item-amount">
-                  {formatCurrency(rentalPropertyTax / 12)} / mo (your 33.3%)
+                  {formatCurrency(rentalPropertyTax / 12)} / mo (your {(llcShare * 100).toFixed(0)}%)
                 </div>
                 <div className="tax-item-note">
                   Bypasses the SALT cap entirely as a rental expense.
@@ -150,7 +137,7 @@ function TaxTab({
                   <CheckCircle color="#4ade80" size={20} /> HOA Dues ✨
                 </div>
                 <div className="tax-item-amount">
-                  {formatCurrency(rentalHOA / 12)} / mo (your 33.3%)
+                  {formatCurrency(rentalHOA / 12)} / mo (your {(llcShare * 100).toFixed(0)}%)
                 </div>
                 <div className="tax-item-note">
                   <strong>Newly deductible!</strong> Not deductible as a
@@ -165,13 +152,12 @@ function TaxTab({
                   <CheckCircle color="#4ade80" size={20} /> Depreciation ✨
                 </div>
                 <div className="tax-item-amount">
-                  {formatCurrency(userShareOfDepreciation / 12)} / mo (your
-                  33.3%)
+                  {formatCurrency(userShareOfDepreciation / 12)} / mo (your {(llcShare * 100).toFixed(0)}%)
                 </div>
                 <div className="tax-item-note">
                   <strong>Phantom deduction!</strong>{" "}
                   {formatCurrency(purchasePrice)} × 80% building ÷ 27.5 years ÷
-                  3 members = {formatCurrency(userShareOfDepreciation)}/yr.
+                  2 members = {formatCurrency(userShareOfDepreciation)}/yr.
                 </div>
               </div>
             </div>
@@ -185,7 +171,7 @@ function TaxTab({
                   fontSize: "1.1rem",
                 }}
               >
-                📋 Operating Expenses (Your 33.3% Share)
+                📋 Operating Expenses (Your {(llcShare * 100).toFixed(0)}% Share)
               </h3>
               <div
                 style={{
@@ -204,7 +190,7 @@ function TaxTab({
                   </span>
                 </div>
                 <div style={{ color: "#64748b", fontSize: "0.8rem" }}>
-                  Covers cleaning, repairs &amp; maintenance, travel/mileage,
+                  Covers cleaning, general repairs, maintenance,
                   and landlord insurance. LLC total:{" "}
                   {formatCurrency(totalOperatingExpenses)}/yr (
                   {formatCurrency(totalOperatingExpenses / 12)}/mo).
@@ -217,12 +203,12 @@ function TaxTab({
         {/* STEP 2: Annual P&L */}
         <div className="card" style={{ marginBottom: "24px" }}>
           <div className="card-header" style={{ fontSize: "1.3rem" }}>
-            Step 2: Your 33.3% K-1 — Annual Rental P&L (Year {selectedYear})
+            Step 2: Your {(llcShare * 100).toFixed(0)}% K-1 — Annual Rental P&L (Year {selectedYear})
           </div>
           <div className="card-body">
             <p style={{ color: "#94a3b8", marginBottom: "20px" }}>
               The LLC files Form 1065 and issues each member a K-1. Here's your
-              1/3 share:
+              {(llcShare * 100).toFixed(0)}% share:
             </p>
 
             <div
@@ -281,7 +267,7 @@ function TaxTab({
                   marginBottom: "12px",
                 }}
               >
-                Deductible Expenses (your 33.3%)
+                Deductible Expenses (your {(llcShare * 100).toFixed(0)}%)
               </div>
               <div className="row">
                 <span>Mortgage Interest:</span>{" "}
