@@ -14,7 +14,10 @@ import {
   User,
   Wrench,
   Percent,
-  Activity
+  Activity,
+  PiggyBank,
+  Landmark,
+  CalendarDays
 } from "lucide-react";
 import { EditableSlider } from "./EditableSlider";
 import CashFlowTab from "./CashFlowTab";
@@ -84,16 +87,19 @@ function App() {
   const [rentInflation, setRentInflation] = useState(3.0);
   const [moveOutYear, setMoveOutYear] = useState(5);
   const [operatingExpenseRate, setOperatingExpenseRate] = useState(0.5);
+  const [downPaymentPercent, setDownPaymentPercent] = useState(20);
+  const [loanTermYears, setLoanTermYears] = useState(30);
+  const [propertyTaxRate, setPropertyTaxRate] = useState(1.18);
 
   const totalRent = isRental 
     ? tenantRent * Math.pow(1 + rentInflation / 100, selectedYear > 1 ? selectedYear - 1 : 0) 
     : userRent + brotherRent;
 
   // 1. Property Calculations (Base values)
-  const downPayment = purchasePrice * 0.2;
+  const downPayment = purchasePrice * (downPaymentPercent / 100);
   const loanAmount = purchasePrice - downPayment;
   const monthlyRate = interestRate / 100 / 12;
-  const numPayments = 360;
+  const numPayments = loanTermYears * 12;
 
   const mortgage =
     loanAmount > 0
@@ -105,7 +111,7 @@ function App() {
       : 0;
 
   // Dynamic Property Costs based on selectedYear
-  const basePropertyTaxAnnual = purchasePrice * 0.0118;
+  const basePropertyTaxAnnual = purchasePrice * (propertyTaxRate / 100);
   const propertyTaxAnnual =
     basePropertyTaxAnnual *
     Math.pow(1.02, selectedYear > 1 ? selectedYear - 1 : 0); // Prop 13 cap
@@ -124,7 +130,7 @@ function App() {
   const amortizationSchedule = useMemo(() => {
     const schedule = [];
     let balance = loanAmount;
-    for (let year = 1; year <= 30; year++) {
+    for (let year = 1; year <= loanTermYears; year++) {
       let principalThisYear = 0;
       let interestThisYear = 0;
       for (let month = 1; month <= 12; month++) {
@@ -142,7 +148,7 @@ function App() {
       });
     }
     return schedule;
-  }, [loanAmount, monthlyRate, mortgage]);
+  }, [loanAmount, monthlyRate, mortgage, loanTermYears]);
 
   // 3. Tax Calculations
   const currentYearData = amortizationSchedule[selectedYear - 1] || {
@@ -338,7 +344,15 @@ function App() {
             )}
             
             {activeTab === "loan" && (
-              <ContextualSlider icon={Percent} label="Rate" value={interestRate} setValue={setInterestRate} min={5.5} max={7.5} step={0.125} format="percentage" />
+              <>
+                <ContextualSlider icon={PiggyBank} label="Down" value={downPaymentPercent} setValue={setDownPaymentPercent} min={0} max={100} step={1} format="percentage" />
+                <ContextualSlider icon={Percent} label="Rate" value={interestRate} setValue={setInterestRate} min={4.0} max={8.0} step={0.125} format="percentage" />
+                <ContextualSlider icon={CalendarDays} label="Term" value={loanTermYears} setValue={setLoanTermYears} min={15} max={30} step={15} format="years" />
+              </>
+            )}
+            
+            {activeTab === "taxes" && (
+              <ContextualSlider icon={Landmark} label="Tax Rate" value={propertyTaxRate} setValue={setPropertyTaxRate} min={0.5} max={2.0} step={0.01} format="percentage" />
             )}
             
             {activeTab === "longterm" && (
@@ -349,7 +363,7 @@ function App() {
               </>
             )}
             
-            {activeTab === "opportunity" && (
+            {activeTab === "oppcost" && (
               <>
                 <ContextualSlider icon={TrendingUp} label="Appreciation" value={appreciation} setValue={setAppreciation} min={0} max={10} step={0.5} format="percentage" />
                 <ContextualSlider icon={TrendingUp} label="Rent Infl." value={rentInflation} setValue={setRentInflation} min={0} max={10} step={0.5} format="percentage" />
@@ -454,11 +468,14 @@ function App() {
         {activeTab === "loan" && (
           <LoanTab
             purchasePrice={purchasePrice}
+            downPaymentPercent={downPaymentPercent}
             loanAmount={loanAmount}
             mortgage={mortgage}
+            propertyTaxRate={propertyTaxRate}
             propertyTax={propertyTax}
             hoa={hoa}
             propertyCosts={propertyCosts}
+            loanTermYears={loanTermYears}
             amortizationSchedule={amortizationSchedule}
             selectedYear={selectedYear}
           />
