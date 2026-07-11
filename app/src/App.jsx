@@ -57,7 +57,7 @@ const ContextualSlider = ({ icon: Icon, label, value, setValue, min, max, step, 
           value={value}
           onChange={(e) => setValue(Number(e.target.value))}
           className="slider blue-slider"
-          style={{ width: "100%", margin: 0 }}
+          style={{ width: "140px", margin: 0, flexShrink: 0 }}
         />
       </div>
     </div>
@@ -378,7 +378,7 @@ function App() {
                   value={selectedYear}
                   onChange={(e) => setSelectedYear(Number(e.target.value))}
                   className="slider blue-slider"
-                  style={{ width: "100%", margin: 0 }}
+                  style={{ width: "140px", margin: 0, flexShrink: 0 }}
                 />
               </div>
             </div>

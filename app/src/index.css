@@ -259,8 +259,6 @@ body::after {
 .year-badge-container {
   display: flex;
   align-items: center;
-  overflow: hidden;
-  max-width: 75px;
   height: 28px;
   padding: 0 10px;
   border-radius: 14px;
@@ -275,7 +273,6 @@ body::after {
 }
 
 .year-badge-container:hover {
-  max-width: 250px;
   background: rgba(255, 255, 255, 0.1);
   border-color: rgba(255, 255, 255, 0.2);
 }
@@ -289,17 +286,20 @@ body::after {
 
 .year-slider-inline {
   opacity: 0;
-  width: 140px;
+  width: 0;
+  margin-left: 0;
   flex-shrink: 0;
-  margin-left: 12px;
-  transition: opacity 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   pointer-events: none;
   display: flex;
   align-items: center;
+  overflow: hidden;
 }
 
 .year-badge-container:hover .year-slider-inline {
   opacity: 1;
+  width: 140px;
+  margin-left: 12px;
   pointer-events: auto;
   transition-delay: 0.1s;
 }
