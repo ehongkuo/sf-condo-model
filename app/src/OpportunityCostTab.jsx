@@ -32,7 +32,8 @@ function OpportunityCostTab({
   // Ownership shares
   const userEquityShare = 0.25;
   const userCashFlowShareOwner = 0.25;
-  const userCashFlowShareRental = 1 / 3;
+  const userCashFlowShareRental = 0.25;
+  const userTaxShareRental = 0.50;
 
   // Tax constants
   const tcjaLimit = 750000;
@@ -144,14 +145,14 @@ function OpportunityCostTab({
           (totalPropertyCosts + currentOpExMonthly) * userCashFlowShareRental;
         const userRentIncome = inflatedTenantRent * userCashFlowShareRental;
 
-        // LLC Tax Shield
-        const rentalInterest = totalInterestForYear * userCashFlowShareRental;
-        const rentalPropertyTax = currentTaxAnnual * userCashFlowShareRental;
-        const rentalHOA = currentHOA * 12 * userCashFlowShareRental;
+        // LLC Tax Shield (Using Tax Share)
+        const rentalInterest = totalInterestForYear * userTaxShareRental;
+        const rentalPropertyTax = currentTaxAnnual * userTaxShareRental;
+        const rentalHOA = currentHOA * 12 * userTaxShareRental;
         const userShareOfDepreciation =
-          annualDepreciation * userCashFlowShareRental;
+          annualDepreciation * userTaxShareRental;
         const userShareOfOperatingExpenses =
-          currentOpExAnnual * userCashFlowShareRental;
+          currentOpExAnnual * userTaxShareRental;
         const totalRentalDeductions =
           rentalInterest +
           rentalPropertyTax +
@@ -159,10 +160,11 @@ function OpportunityCostTab({
           userShareOfDepreciation +
           userShareOfOperatingExpenses;
 
-        const annualRentalIncome =
-          inflatedTenantRent * 12 * userCashFlowShareRental;
-        const netRentalIncome = annualRentalIncome - totalRentalDeductions;
-        const monthlyRentalTaxCost = (netRentalIncome * marginalRate) / 12; // negative = savings, positive = cost
+        // IRS sees brothers receiving 100% of rent (50% each)
+        const annualRentalIncomeTax =
+          inflatedTenantRent * 12 * userTaxShareRental;
+        const netRentalIncomeTax = annualRentalIncomeTax - totalRentalDeductions;
+        const monthlyRentalTaxCost = (netRentalIncomeTax * marginalRate) / 12; // negative = savings, positive = cost
 
         userNetCostThisMonth =
           userShareOfCosts - userRentIncome + monthlyRentalTaxCost;

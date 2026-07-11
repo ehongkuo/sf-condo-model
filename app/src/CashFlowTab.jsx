@@ -31,13 +31,13 @@ function CashFlowTab({
   totalOperatingExpenses,
   selectedYear,
 }) {
-  const dadShare = isRental ? 1 / 3 : 0.5;
-  const userShare = isRental ? 1 / 3 : 0.25;
-  const brotherShare = isRental ? 1 / 3 : 0.25;
+  const dadShare = 0.5;
+  const userShare = 0.25;
+  const brotherShare = 0.25;
 
-  const dadLabel = isRental ? "33.3%" : "50%";
-  const userLabel = isRental ? "33.3%" : "25%";
-  const brotherLabel = isRental ? "33.3%" : "25%";
+  const dadLabel = "50%";
+  const userLabel = "25%";
+  const brotherLabel = "25%";
 
   const opExMonthly = (totalOperatingExpenses || 0) / 12;
 
