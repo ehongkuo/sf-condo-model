@@ -284,10 +284,24 @@ function App() {
         </div>
         <div className="topbar-right">
           <div className="topbar-badges">
-            <span className="topbar-badge">
-              <Clock size={13} />
-              Year {selectedYear}
-            </span>
+            <div className="year-badge-container">
+              <span className="topbar-badge" style={{ cursor: "pointer" }}>
+                <Clock size={13} />
+                Year {selectedYear}
+              </span>
+              <div className="year-slider-popup">
+                <EditableSlider
+                  label={`Adjust Year: ${selectedYear}`}
+                  value={selectedYear}
+                  setValue={setSelectedYear}
+                  min={1}
+                  max={30}
+                  step={1}
+                  format="years"
+                  className="slider blue-slider"
+                />
+              </div>
+            </div>
             <span className={`topbar-badge ${isRental ? "badge-purple" : "badge-blue"}`}>
               {isRental ? "Rental" : "Owner"}
             </span>
@@ -308,21 +322,8 @@ function App() {
 
       {/* ─── CONTROLS DRAWER ─── */}
       <div className={`controls-drawer ${drawerOpen ? "open" : ""}`}>
-        {/* Row 1: Year slider + toggles */}
-        <div className="controls-row">
-          <div className="controls-year">
-            <Clock size={16} className="year-icon" />
-            <EditableSlider
-              label=""
-              value={selectedYear}
-              setValue={setSelectedYear}
-              min={1}
-              max={30}
-              step={1}
-              format="years"
-              className="slider blue-slider"
-            />
-          </div>
+        {/* Row 1: Toggles */}
+        <div className="controls-row" style={{ justifyContent: "flex-end" }}>
           <div className="controls-toggles">
             <label className="checkbox-label">
               <input
