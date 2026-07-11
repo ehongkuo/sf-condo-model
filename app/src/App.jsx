@@ -10,6 +10,11 @@ import {
   ChevronDown,
   ChevronUp,
   Sliders,
+  Users,
+  User,
+  Wrench,
+  Percent,
+  Activity
 } from "lucide-react";
 import { EditableSlider } from "./EditableSlider";
 import CashFlowTab from "./CashFlowTab";
@@ -24,12 +29,43 @@ const TAB_CONFIG = [
   { id: "loan", icon: Building, label: "Loan" },
   { id: "taxes", icon: Calculator, label: "Taxes" },
   { id: "longterm", icon: TrendingUp, label: "Long-Term" },
-  { id: "oppcost", icon: Scale, label: "Buy vs Rent" },
+  { id: "opportunity", icon: Scale, label: "Buy vs Rent" },
 ];
+
+const ContextualSlider = ({ icon: Icon, label, value, setValue, min, max, step, format = "currency" }) => {
+  let displayValue = value;
+  if (format.startsWith("currency")) {
+    displayValue = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(value);
+  } else if (format.startsWith("percentage")) {
+    displayValue = `${value}%`;
+  }
+  if (format === "currency/mo") displayValue += "/mo";
+  if (format === "years") displayValue += " yrs";
+
+  return (
+    <div className="year-badge-container">
+      <div className="year-text">
+        <Icon size={13} />
+        {label}: {displayValue}
+      </div>
+      <div className="year-slider-inline">
+        <input
+          type="range"
+          min={min}
+          max={max}
+          step={step}
+          value={value}
+          onChange={(e) => setValue(Number(e.target.value))}
+          className="slider blue-slider"
+          style={{ width: "100%", margin: 0 }}
+        />
+      </div>
+    </div>
+  );
+};
 
 function App() {
   const [activeTab, setActiveTab] = useState("cashflow");
-  const [drawerOpen, setDrawerOpen] = useState(true);
 
   // Shared state
   const [userRent, setUserRent] = useState(3200);
@@ -278,9 +314,53 @@ function App() {
 
       {/* ─── TOP BAR ─── */}
       <header className="topbar">
-        <div className="topbar-left">
+        <div className="topbar-left" style={{ gap: "16px" }}>
           <h1 className="topbar-title">SF Condo Financial Model</h1>
-          <span className="topbar-address">1111 Bay St, Unit 307</span>
+          
+          <div style={{ display: "flex", gap: "8px", marginLeft: "12px" }}>
+            {activeTab === "cashflow" && (
+              <>
+                <ContextualSlider icon={Building} label="HOA" value={baseHOA} setValue={setBaseHOA} min={500} max={2500} step={10} format="currency/mo" />
+                {isRental ? (
+                  <>
+                    <ContextualSlider icon={Users} label="Tenant Rent" value={tenantRent} setValue={setTenantRent} min={5500} max={9000} step={100} format="currency/mo" />
+                    <ContextualSlider icon={Wrench} label="OpEx" value={operatingExpenseRate} setValue={setOperatingExpenseRate} min={0} max={5} step={0.1} format="percentage" />
+                  </>
+                ) : (
+                  <>
+                    <ContextualSlider icon={User} label="You" value={userRent} setValue={setUserRent} min={2500} max={4000} step={50} format="currency/mo" />
+                    <ContextualSlider icon={User} label="Brother" value={brotherRent} setValue={setBrotherRent} min={2500} max={4000} step={50} format="currency/mo" />
+                  </>
+                )}
+              </>
+            )}
+            
+            {activeTab === "loan" && (
+              <>
+                <ContextualSlider icon={Home} label="Price" value={purchasePrice} setValue={setPurchasePrice} min={900000} max={1500000} step={10000} format="currency" />
+                <ContextualSlider icon={Percent} label="Rate" value={interestRate} setValue={setInterestRate} min={5.5} max={7.5} step={0.125} format="percentage" />
+              </>
+            )}
+            
+            {activeTab === "taxes" && (
+              <ContextualSlider icon={DollarSign} label="Price" value={purchasePrice} setValue={setPurchasePrice} min={900000} max={1500000} step={10000} format="currency" />
+            )}
+            
+            {activeTab === "longterm" && (
+              <>
+                <ContextualSlider icon={TrendingUp} label="Appreciation" value={appreciation} setValue={setAppreciation} min={0} max={10} step={0.5} format="percentage" />
+                <ContextualSlider icon={Clock} label="Move Out" value={moveOutYear} setValue={setMoveOutYear} min={2} max={10} step={1} format="years" />
+                <ContextualSlider icon={Activity} label="HOA Infl." value={hoaInflation} setValue={setHoaInflation} min={1} max={10} step={0.5} format="percentage" />
+              </>
+            )}
+            
+            {activeTab === "opportunity" && (
+              <>
+                <ContextualSlider icon={TrendingUp} label="Appreciation" value={appreciation} setValue={setAppreciation} min={0} max={10} step={0.5} format="percentage" />
+                <ContextualSlider icon={TrendingUp} label="Rent Infl." value={rentInflation} setValue={setRentInflation} min={0} max={10} step={0.5} format="percentage" />
+              </>
+            )}
+          </div>
         </div>
         <div className="topbar-right">
           <div className="topbar-badges">
@@ -302,6 +382,26 @@ function App() {
                 />
               </div>
             </div>
+            <label 
+              className="topbar-badge" 
+              style={{ 
+                cursor: "pointer", 
+                display: "flex", 
+                alignItems: "center", 
+                gap: "6px",
+                background: includeTaxSavings ? "rgba(52, 211, 153, 0.1)" : "rgba(255, 255, 255, 0.05)",
+                borderColor: includeTaxSavings ? "rgba(52, 211, 153, 0.3)" : "rgba(255, 255, 255, 0.08)",
+                color: includeTaxSavings ? "var(--positive)" : "var(--text-secondary)"
+              }}
+            >
+              <input 
+                type="checkbox" 
+                checked={includeTaxSavings} 
+                onChange={(e) => setIncludeTaxSavings(e.target.checked)} 
+                style={{ margin: 0, cursor: "pointer" }} 
+              />
+              Tax Savings
+            </label>
             <span 
               className={`topbar-badge ${isRental ? "badge-purple" : "badge-blue"}`}
               style={{ cursor: "pointer" }}
@@ -314,183 +414,8 @@ function App() {
               Net: {formatCurrency(userNet)}/mo
             </span>
           </div>
-          <button
-            className={`drawer-toggle ${drawerOpen ? "open" : ""}`}
-            onClick={() => setDrawerOpen(!drawerOpen)}
-          >
-            <Sliders size={15} />
-            <span>Controls</span>
-            {drawerOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-          </button>
         </div>
       </header>
-
-      {/* ─── CONTROLS DRAWER ─── */}
-      <div className={`controls-drawer ${drawerOpen ? "open" : ""}`}>
-        {/* Row 1: Toggles */}
-        <div className="controls-row" style={{ justifyContent: "flex-end" }}>
-          <div className="controls-toggles">
-            <label className="checkbox-label">
-              <input
-                type="checkbox"
-                checked={includeTaxSavings}
-                onChange={(e) => setIncludeTaxSavings(e.target.checked)}
-              />
-              Tax Savings
-            </label>
-            <div className="mode-toggle">
-              <button
-                className={`mode-btn ${!isRental ? "active-owner" : ""}`}
-                onClick={() => setIsRental(false)}
-              >
-                Owner
-              </button>
-              <button
-                className={`mode-btn ${isRental ? "active-rental" : ""}`}
-                onClick={() => setIsRental(true)}
-              >
-                Rental
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Row 2: Global sliders grid */}
-        <div className="control-groups-container">
-          {/* Group 1: Property Settings */}
-          <div>
-            <div className="group-title">Property Settings</div>
-            <div className="controls-grid">
-              <EditableSlider
-                label="Purchase Price"
-                value={purchasePrice}
-                setValue={setPurchasePrice}
-                min={900000}
-                max={1500000}
-                step={10000}
-                format="currency"
-              />
-              <EditableSlider
-                label="Interest Rate"
-                value={interestRate}
-                setValue={setInterestRate}
-                min={5.5}
-                max={7.5}
-                step={0.125}
-                format="percentage"
-              />
-              <EditableSlider
-                label="Appreciation"
-                value={appreciation}
-                setValue={setAppreciation}
-                min={-5}
-                max={15}
-                step={0.5}
-                format="percentage"
-                className="slider blue-slider"
-              />
-              <EditableSlider
-                label="Move-Out Year"
-                value={moveOutYear}
-                setValue={setMoveOutYear}
-                min={2}
-                max={10}
-                step={1}
-                format="years"
-              />
-            </div>
-          </div>
-
-          {/* Group 2: HOA & Expenses */}
-          <div>
-            <div className="group-title">HOA & Expenses</div>
-            <div className="controls-grid">
-              <EditableSlider
-                label="Base HOA (Year 1)"
-                value={baseHOA}
-                setValue={setBaseHOA}
-                min={500}
-                max={2500}
-                step={10}
-                format="currency"
-              />
-              <EditableSlider
-                label="HOA Inflation"
-                value={hoaInflation}
-                setValue={setHoaInflation}
-                min={2}
-                max={10}
-                step={0.5}
-                format="percentage"
-                className="slider purple-slider"
-              />
-              {isRental && (
-                <EditableSlider
-                  label="OpEx (% of Value/Yr)"
-                  value={operatingExpenseRate}
-                  setValue={setOperatingExpenseRate}
-                  min={0.1}
-                  max={3.0}
-                  step={0.05}
-                  format="percentage"
-                  className="slider red-slider"
-                />
-              )}
-            </div>
-          </div>
-
-          {/* Group 3: Rent & Usage */}
-          <div>
-            <div className="group-title">Rent & Usage</div>
-            <div className="controls-grid">
-              <EditableSlider
-                label="Rent Inflation"
-                value={rentInflation}
-                setValue={setRentInflation}
-                min={1}
-                max={10}
-                step={0.5}
-                format="percentage"
-                className="slider purple-slider"
-              />
-              {isRental ? (
-                <EditableSlider
-                  label="Tenant Rent (Monthly)"
-                  value={tenantRent}
-                  setValue={setTenantRent}
-                  min={5500}
-                  max={9000}
-                  step={100}
-                  format="currency/mo"
-                />
-              ) : (
-                <>
-                  <EditableSlider
-                    label="Your Rent"
-                    value={userRent}
-                    setValue={setUserRent}
-                    min={2500}
-                    max={4000}
-                    step={100}
-                    format="currency/mo"
-                    className="slider blue-slider"
-                  />
-                  <EditableSlider
-                    label="Brother's Rent"
-                    value={brotherRent}
-                    setValue={setBrotherRent}
-                    min={2500}
-                    max={4000}
-                    step={100}
-                    format="currency/mo"
-                    className="slider purple-slider"
-                  />
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* ─── MAIN CONTENT ─── */}
       <main className="main-content">
