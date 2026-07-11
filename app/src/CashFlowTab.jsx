@@ -96,7 +96,7 @@ function CashFlowTab({
         </div>
       )}
 
-      <div className="grid">
+      <div className="grid-3">
         <div className="card dad-card hover-card">
           <div className="card-header">
             Dad's Net Monthly Flow (Year {selectedYear})

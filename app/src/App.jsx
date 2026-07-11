@@ -5,9 +5,11 @@ import {
   Building,
   Calculator,
   TrendingUp,
-  Clock,
   Scale,
-  Info,
+  Clock,
+  ChevronDown,
+  ChevronUp,
+  Sliders,
 } from "lucide-react";
 import { EditableSlider } from "./EditableSlider";
 import CashFlowTab from "./CashFlowTab";
@@ -17,8 +19,17 @@ import LongTermTab from "./LongTermTab";
 import OpportunityCostTab from "./OpportunityCostTab";
 import { formatCurrency } from "./utils";
 
+const TAB_CONFIG = [
+  { id: "cashflow", icon: DollarSign, label: "Cash Flow" },
+  { id: "loan", icon: Building, label: "Loan" },
+  { id: "taxes", icon: Calculator, label: "Taxes" },
+  { id: "longterm", icon: TrendingUp, label: "Long-Term" },
+  { id: "oppcost", icon: Scale, label: "Buy vs Rent" },
+];
+
 function App() {
   const [activeTab, setActiveTab] = useState("cashflow");
+  const [drawerOpen, setDrawerOpen] = useState(true);
 
   // Shared state
   const [userRent, setUserRent] = useState(3200);
@@ -242,145 +253,100 @@ function App() {
     : brotherRentIncome - brotherRent - brotherExpenses + appliedTaxShield;
 
   return (
-    <div className="container">
-      <header className="header">
-        <h1>
-          <Home className="icon" /> SF Condo Financial Model
-        </h1>
-        <p>1111 Bay Street, Unit 307</p>
+    <div className="app-layout">
+      {/* ─── SIDEBAR ─── */}
+      <nav className="sidebar">
+        <div className="sidebar-logo">
+          <Home size={22} />
+        </div>
+        {TAB_CONFIG.map(({ id, icon: Icon, label }) => (
+          <button
+            key={id}
+            className={`sidebar-btn ${activeTab === id ? "active" : ""}`}
+            onClick={() => setActiveTab(id)}
+            title={label}
+          >
+            <Icon size={20} />
+            <span className="sidebar-label">{label}</span>
+          </button>
+        ))}
+      </nav>
+
+      {/* ─── TOP BAR ─── */}
+      <header className="topbar">
+        <div className="topbar-left">
+          <h1 className="topbar-title">SF Condo Financial Model</h1>
+          <span className="topbar-address">1111 Bay St, Unit 307</span>
+        </div>
+        <div className="topbar-right">
+          <div className="topbar-badges">
+            <span className="topbar-badge">
+              <Clock size={13} />
+              Year {selectedYear}
+            </span>
+            <span className={`topbar-badge ${isRental ? "badge-purple" : "badge-blue"}`}>
+              {isRental ? "Rental" : "Owner"}
+            </span>
+            <span className={`topbar-badge ${userNet >= 0 ? "badge-green" : "badge-red"}`}>
+              Net: {formatCurrency(userNet)}/mo
+            </span>
+          </div>
+          <button
+            className={`drawer-toggle ${drawerOpen ? "open" : ""}`}
+            onClick={() => setDrawerOpen(!drawerOpen)}
+          >
+            <Sliders size={15} />
+            <span>Controls</span>
+            {drawerOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+          </button>
+        </div>
       </header>
 
-      {/* GLOBAL CONTROL PANEL */}
-      <div
-        className="card"
-        style={{
-          position: "sticky",
-          top: "20px",
-          zIndex: 100,
-          marginBottom: "24px",
-          padding: "16px 24px",
-          display: "flex",
-          flexDirection: "column",
-          gap: "16px",
-          background: "rgba(30, 41, 59, 0.98)",
-          backdropFilter: "blur(10px)",
-          border: "1px solid rgba(96, 165, 250, 0.5)",
-          boxShadow: "0 10px 25px rgba(0,0,0,0.5)",
-        }}
-      >
-        {/* Top Row: Year Slider & Toggles */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            paddingBottom: "16px",
-            borderBottom: "1px solid rgba(255,255,255,0.1)",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "12px",
-              flex: 1,
-            }}
-          >
-            <Clock color="#60a5fa" size={28} />
-            <div style={{ flex: 1, maxWidth: "400px" }}>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  marginBottom: "8px",
-                }}
-              >
-                <span style={{ fontWeight: "bold", color: "#f8fafc" }}>
-                  Projection Year Showdown
-                </span>
-              </div>
-              <EditableSlider
-                label=""
-                value={selectedYear}
-                setValue={setSelectedYear}
-                min={1}
-                max={30}
-                step={1}
-                format="years"
-                className="slider blue-slider"
-              />
-            </div>
+      {/* ─── CONTROLS DRAWER ─── */}
+      <div className={`controls-drawer ${drawerOpen ? "open" : ""}`}>
+        {/* Row 1: Year slider + toggles */}
+        <div className="controls-row">
+          <div className="controls-year">
+            <Clock size={16} className="year-icon" />
+            <EditableSlider
+              label=""
+              value={selectedYear}
+              setValue={setSelectedYear}
+              min={1}
+              max={30}
+              step={1}
+              format="years"
+              className="slider blue-slider"
+            />
           </div>
-          <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
-            <label
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-                cursor: "pointer",
-                color: "#94a3b8",
-                fontSize: "0.9rem",
-              }}
-            >
+          <div className="controls-toggles">
+            <label className="checkbox-label">
               <input
                 type="checkbox"
                 checked={includeTaxSavings}
                 onChange={(e) => setIncludeTaxSavings(e.target.checked)}
-                style={{
-                  accentColor: "#4ade80",
-                  width: "16px",
-                  height: "16px",
-                }}
               />
               Tax Savings
             </label>
-            <div
-              style={{
-                display: "flex",
-                gap: "4px",
-                background: "rgba(0,0,0,0.3)",
-                padding: "3px",
-                borderRadius: "8px",
-              }}
-            >
+            <div className="mode-toggle">
               <button
+                className={`mode-btn ${!isRental ? "active-owner" : ""}`}
                 onClick={() => setIsRental(false)}
-                style={{
-                  padding: "5px 12px",
-                  borderRadius: "6px",
-                  border: "none",
-                  fontSize: "0.85rem",
-                  background: !isRental ? "#60a5fa" : "transparent",
-                  color: !isRental ? "#fff" : "#94a3b8",
-                  cursor: "pointer",
-                  fontWeight: "bold",
-                  transition: "all 0.2s",
-                }}
               >
-                Owner Occupied
+                Owner
               </button>
               <button
+                className={`mode-btn ${isRental ? "active-rental" : ""}`}
                 onClick={() => setIsRental(true)}
-                style={{
-                  padding: "5px 12px",
-                  borderRadius: "6px",
-                  border: "none",
-                  fontSize: "0.85rem",
-                  background: isRental ? "#a855f7" : "transparent",
-                  color: isRental ? "#fff" : "#94a3b8",
-                  cursor: "pointer",
-                  fontWeight: "bold",
-                  transition: "all 0.2s",
-                }}
               >
-                Rental Property
+                Rental
               </button>
             </div>
           </div>
         </div>
 
-        {/* Bottom Row: Global Sliders */}
-        <div style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
+        {/* Row 2: Global sliders grid */}
+        <div className="controls-grid">
           <EditableSlider
             label="Purchase Price"
             value={purchasePrice}
@@ -477,39 +443,7 @@ function App() {
         </div>
       </div>
 
-      <div className="nav-tabs">
-        <button
-          className={`nav-btn ${activeTab === "cashflow" ? "active" : ""}`}
-          onClick={() => setActiveTab("cashflow")}
-        >
-          <DollarSign size={18} /> Cash Flow & Rent
-        </button>
-        <button
-          className={`nav-btn ${activeTab === "loan" ? "active" : ""}`}
-          onClick={() => setActiveTab("loan")}
-        >
-          <Building size={18} /> Property & Loan Math
-        </button>
-        <button
-          className={`nav-btn ${activeTab === "taxes" ? "active" : ""}`}
-          onClick={() => setActiveTab("taxes")}
-        >
-          <Calculator size={18} /> Tax Savings Explained
-        </button>
-        <button
-          className={`nav-btn ${activeTab === "longterm" ? "active" : ""}`}
-          onClick={() => setActiveTab("longterm")}
-        >
-          <TrendingUp size={18} /> Long-Term ROI
-        </button>
-        <button
-          className={`nav-btn ${activeTab === "oppcost" ? "active" : ""}`}
-          onClick={() => setActiveTab("oppcost")}
-        >
-          <Scale size={18} /> Buy vs Rent
-        </button>
-      </div>
-
+      {/* ─── MAIN CONTENT ─── */}
       <main className="main-content">
         {activeTab === "cashflow" && (
           <CashFlowTab
@@ -573,7 +507,6 @@ function App() {
             incrementalDeduction={incrementalDeduction}
             annualTaxSavings={annualTaxSavings}
             userTaxShield={userTaxShieldScheduleA}
-
             // Rental LLC props passed down from App
             purchasePrice={purchasePrice}
             rentalInterest={rentalInterest}
