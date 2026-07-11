@@ -14,10 +14,43 @@ export function EditableSlider({
   const isCurrency = format.startsWith("currency");
   const isPercentage = format.startsWith("percentage");
 
+  let displayValue = value;
+  if (isCurrency) {
+    displayValue = new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      maximumFractionDigits: 0,
+    }).format(value);
+  } else if (isPercentage) {
+    displayValue = `${value}%`;
+  }
+  if (format === "currency/mo") displayValue += "/mo";
+  if (format === "years") displayValue += " yrs";
+
   return (
     <div className="slider-group">
       {label && (
-        <label className="slider-label">{label}</label>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            marginBottom: "4px",
+            alignItems: "center",
+          }}
+        >
+          <label className="slider-label" style={{ margin: 0 }}>
+            {label}
+          </label>
+          <span
+            style={{
+              fontSize: "0.85rem",
+              color: "#e2e8f0",
+              fontWeight: "bold",
+            }}
+          >
+            {displayValue}
+          </span>
+        </div>
       )}
       <input
         type="range"
@@ -28,26 +61,6 @@ export function EditableSlider({
         onChange={(e) => setValue(Number(e.target.value))}
         className={className}
       />
-      <div className="slider-value-row">
-        {isCurrency && (
-          <span className="slider-prefix">$</span>
-        )}
-        <input
-          type="number"
-          value={value}
-          onChange={(e) => setValue(Number(e.target.value))}
-          className="compact-input"
-        />
-        {isPercentage && (
-          <span className="slider-suffix">%</span>
-        )}
-        {format === "currency/mo" && (
-          <span className="slider-suffix">/mo</span>
-        )}
-        {format === "years" && (
-          <span className="slider-suffix">yrs</span>
-        )}
-      </div>
     </div>
   );
 }

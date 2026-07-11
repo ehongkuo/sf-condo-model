@@ -355,7 +355,7 @@ function App() {
             label="Purchase Price"
             value={purchasePrice}
             setValue={setPurchasePrice}
-            min={100000}
+            min={900000}
             max={1500000}
             step={10000}
             format="currency"
@@ -364,8 +364,8 @@ function App() {
             label="Interest Rate"
             value={interestRate}
             setValue={setInterestRate}
-            min={0.0}
-            max={10.0}
+            min={5.5}
+            max={7.5}
             step={0.125}
             format="percentage"
           />
@@ -373,8 +373,8 @@ function App() {
             label="Base HOA (Year 1)"
             value={baseHOA}
             setValue={setBaseHOA}
-            min={100}
-            max={3000}
+            min={500}
+            max={2500}
             step={10}
             format="currency"
           />
@@ -434,8 +434,8 @@ function App() {
               label="Tenant Rent (Monthly)"
               value={tenantRent}
               setValue={setTenantRent}
-              min={0}
-              max={15000}
+              min={5500}
+              max={9000}
               step={100}
               format="currency/mo"
             />
@@ -445,8 +445,8 @@ function App() {
                 label="Your Rent"
                 value={userRent}
                 setValue={setUserRent}
-                min={0}
-                max={10000}
+                min={2500}
+                max={4000}
                 step={100}
                 format="currency/mo"
                 className="slider blue-slider"
@@ -455,8 +455,8 @@ function App() {
                 label="Brother's Rent"
                 value={brotherRent}
                 setValue={setBrotherRent}
-                min={0}
-                max={10000}
+                min={2500}
+                max={4000}
                 step={100}
                 format="currency/mo"
                 className="slider purple-slider"
