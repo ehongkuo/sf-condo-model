@@ -302,7 +302,12 @@ function App() {
                 />
               </div>
             </div>
-            <span className={`topbar-badge ${isRental ? "badge-purple" : "badge-blue"}`}>
+            <span 
+              className={`topbar-badge ${isRental ? "badge-purple" : "badge-blue"}`}
+              style={{ cursor: "pointer" }}
+              onClick={() => setIsRental(!isRental)}
+              title="Click to toggle between Owner and Rental mode"
+            >
               {isRental ? "Rental" : "Owner"}
             </span>
             <span className={`topbar-badge ${userNet >= 0 ? "badge-green" : "badge-red"}`}>
