@@ -293,6 +293,9 @@ body::after {
   pointer-events: none;
   display: flex;
   align-items: center;
+  height: 50px;
+  margin-top: -11px;
+  margin-bottom: -11px;
   overflow: hidden;
 }
 

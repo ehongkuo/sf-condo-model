@@ -318,6 +318,8 @@ function App() {
           <h1 className="topbar-title">SF Condo Financial Model</h1>
           
           <div style={{ display: "flex", gap: "8px", marginLeft: "12px" }}>
+            <ContextualSlider icon={Home} label="Price" value={purchasePrice} setValue={setPurchasePrice} min={900000} max={1500000} step={10000} format="currency" />
+            
             {activeTab === "cashflow" && (
               <>
                 <ContextualSlider icon={Building} label="HOA" value={baseHOA} setValue={setBaseHOA} min={500} max={2500} step={10} format="currency/mo" />
@@ -336,14 +338,7 @@ function App() {
             )}
             
             {activeTab === "loan" && (
-              <>
-                <ContextualSlider icon={Home} label="Price" value={purchasePrice} setValue={setPurchasePrice} min={900000} max={1500000} step={10000} format="currency" />
-                <ContextualSlider icon={Percent} label="Rate" value={interestRate} setValue={setInterestRate} min={5.5} max={7.5} step={0.125} format="percentage" />
-              </>
-            )}
-            
-            {activeTab === "taxes" && (
-              <ContextualSlider icon={DollarSign} label="Price" value={purchasePrice} setValue={setPurchasePrice} min={900000} max={1500000} step={10000} format="currency" />
+              <ContextualSlider icon={Percent} label="Rate" value={interestRate} setValue={setInterestRate} min={5.5} max={7.5} step={0.125} format="percentage" />
             )}
             
             {activeTab === "longterm" && (
