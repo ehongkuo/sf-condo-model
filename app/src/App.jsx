@@ -358,7 +358,9 @@ function App() {
             {activeTab === "longterm" && (
               <>
                 <ContextualSlider icon={TrendingUp} label="Appreciation" value={appreciation} setValue={setAppreciation} min={0} max={10} step={0.5} format="percentage" />
-                <ContextualSlider icon={Clock} label="Move Out" value={moveOutYear} setValue={setMoveOutYear} min={2} max={10} step={1} format="years" />
+                {!isRental && (
+                  <ContextualSlider icon={Clock} label="Move Out" value={moveOutYear} setValue={setMoveOutYear} min={2} max={10} step={1} format="years" />
+                )}
                 <ContextualSlider icon={Activity} label="HOA Infl." value={hoaInflation} setValue={setHoaInflation} min={1} max={10} step={0.5} format="percentage" />
               </>
             )}
@@ -522,6 +524,7 @@ function App() {
 
         {activeTab === "longterm" && (
           <LongTermTab
+            isRental={isRental}
             purchasePrice={purchasePrice}
             loanAmount={loanAmount}
             amortizationSchedule={amortizationSchedule}
