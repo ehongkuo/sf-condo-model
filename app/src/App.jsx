@@ -365,7 +365,7 @@ function App() {
               </>
             )}
             
-            {activeTab === "oppcost" && (
+            {activeTab === "opportunity" && (
               <>
                 <ContextualSlider icon={TrendingUp} label="Appreciation" value={appreciation} setValue={setAppreciation} min={0} max={10} step={0.5} format="percentage" />
                 <ContextualSlider icon={TrendingUp} label="Rent Infl." value={rentInflation} setValue={setRentInflation} min={0} max={10} step={0.5} format="percentage" />
@@ -536,7 +536,7 @@ function App() {
           />
         )}
 
-        {activeTab === "oppcost" && (
+        {activeTab === "opportunity" && (
           <OpportunityCostTab
             purchasePrice={purchasePrice}
             loanAmount={loanAmount}
