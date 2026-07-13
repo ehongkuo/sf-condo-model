@@ -18,10 +18,11 @@ function OpportunityCostTab({
   moveOutYear,
   selectedYear,
   amortizationSchedule,
+  rentInflation,
+  setRentInflation,
 }) {
   const [stockMarketReturn, setStockMarketReturn] = useState(7.0);
   const [equivalentRent, setEquivalentRent] = useState(3300);
-  const [rentInflation, setRentInflation] = useState(3.0);
 
   // Constants
   const STARTING_CASH = 100000;
@@ -206,7 +207,7 @@ function OpportunityCostTab({
         const prevYearPropertyVal = purchasePrice * Math.pow(1 + appreciation / 100, selectedYear - 1);
         const prevYearIndex = (selectedYear - 1) - 1; 
         const prevYearRemainingBalance = prevYearIndex >= 0 && amortizationSchedule.length > 0
-          ? amortizationSchedule[prevYearIndex].balance 
+          ? (amortizationSchedule[prevYearIndex]?.balance || 0)
           : loanAmount;
         const prevYearGrossEquityTotal = prevYearPropertyVal - prevYearRemainingBalance;
         prevYearNetWorthBuy = buyLiquidCash + (prevYearGrossEquityTotal * userEquityShare);
@@ -223,10 +224,10 @@ function OpportunityCostTab({
     const finalPropertyVal =
       purchasePrice * Math.pow(1 + appreciation / 100, selectedYear);
     const yearIndex = Math.min(selectedYear - 1, 29);
-    const remainingLoanTotal =
-      amortizationSchedule.length > 0 && amortizationSchedule[yearIndex]
-        ? amortizationSchedule[yearIndex].balance
-        : loanAmount;
+      const remainingLoanTotal = 
+        amortizationSchedule.length > 0
+          ? (amortizationSchedule[yearIndex]?.balance || 0)
+          : loanAmount;
 
     const grossEquityTotal = finalPropertyVal - remainingLoanTotal;
     const sellerClosingCostsTotal =

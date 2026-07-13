@@ -5,9 +5,19 @@ import {
   Building,
   Calculator,
   TrendingUp,
-  Clock,
   Scale,
-  Info,
+  Clock,
+  ChevronDown,
+  ChevronUp,
+  Sliders,
+  Users,
+  User,
+  Wrench,
+  Percent,
+  Activity,
+  PiggyBank,
+  Landmark,
+  CalendarDays
 } from "lucide-react";
 import { EditableSlider } from "./EditableSlider";
 import CashFlowTab from "./CashFlowTab";
@@ -16,6 +26,46 @@ import TaxTab from "./TaxTab";
 import LongTermTab from "./LongTermTab";
 import OpportunityCostTab from "./OpportunityCostTab";
 import { formatCurrency } from "./utils";
+
+const TAB_CONFIG = [
+  { id: "cashflow", icon: DollarSign, label: "Cash Flow" },
+  { id: "loan", icon: Building, label: "Loan" },
+  { id: "taxes", icon: Calculator, label: "Taxes" },
+  { id: "longterm", icon: TrendingUp, label: "Long-Term" },
+  { id: "opportunity", icon: Scale, label: "Buy vs Rent" },
+];
+
+const ContextualSlider = ({ icon: Icon, label, value, setValue, min, max, step, format = "currency" }) => {
+  let displayValue = value;
+  if (format.startsWith("currency")) {
+    displayValue = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(value);
+  } else if (format.startsWith("percentage")) {
+    displayValue = `${value}%`;
+  }
+  if (format === "currency/mo") displayValue += "/mo";
+  if (format === "years") displayValue += " yrs";
+
+  return (
+    <div className="year-badge-container">
+      <div className="year-text">
+        <Icon size={13} />
+        {label}: {displayValue}
+      </div>
+      <div className="year-slider-inline">
+        <input
+          type="range"
+          min={min}
+          max={max}
+          step={step}
+          value={value}
+          onChange={(e) => setValue(Number(e.target.value))}
+          className="slider blue-slider"
+          style={{ width: "140px", margin: 0, flexShrink: 0 }}
+        />
+      </div>
+    </div>
+  );
+};
 
 function App() {
   const [activeTab, setActiveTab] = useState("cashflow");
@@ -31,18 +81,25 @@ function App() {
   // Global Controls State
   const [purchasePrice, setPurchasePrice] = useState(1050000);
   const [interestRate, setInterestRate] = useState(6.5);
+  const [baseHOA, setBaseHOA] = useState(1556.0);
   const [hoaInflation, setHoaInflation] = useState(4.0);
   const [appreciation, setAppreciation] = useState(3.0);
+  const [rentInflation, setRentInflation] = useState(3.0);
   const [moveOutYear, setMoveOutYear] = useState(5);
   const [operatingExpenseRate, setOperatingExpenseRate] = useState(0.5);
+  const [downPaymentPercent, setDownPaymentPercent] = useState(20);
+  const [loanTermYears, setLoanTermYears] = useState(30);
+  const [propertyTaxRate, setPropertyTaxRate] = useState(1.18);
 
-  const totalRent = isRental ? tenantRent : userRent + brotherRent;
+  const totalRent = isRental 
+    ? tenantRent * Math.pow(1 + rentInflation / 100, selectedYear > 1 ? selectedYear - 1 : 0) 
+    : userRent + brotherRent;
 
   // 1. Property Calculations (Base values)
-  const downPayment = purchasePrice * 0.2;
+  const downPayment = purchasePrice * (downPaymentPercent / 100);
   const loanAmount = purchasePrice - downPayment;
   const monthlyRate = interestRate / 100 / 12;
-  const numPayments = 360;
+  const numPayments = loanTermYears * 12;
 
   const mortgage =
     loanAmount > 0
@@ -54,13 +111,13 @@ function App() {
       : 0;
 
   // Dynamic Property Costs based on selectedYear
-  const basePropertyTaxAnnual = purchasePrice * 0.0118;
+  const basePropertyTaxAnnual = purchasePrice * (propertyTaxRate / 100);
   const propertyTaxAnnual =
     basePropertyTaxAnnual *
     Math.pow(1.02, selectedYear > 1 ? selectedYear - 1 : 0); // Prop 13 cap
   const propertyTax = propertyTaxAnnual / 12;
 
-  const baseHOA = 1556.0;
+
   const currentHOAAnnual =
     baseHOA *
     12 *
@@ -73,7 +130,7 @@ function App() {
   const amortizationSchedule = useMemo(() => {
     const schedule = [];
     let balance = loanAmount;
-    for (let year = 1; year <= 30; year++) {
+    for (let year = 1; year <= loanTermYears; year++) {
       let principalThisYear = 0;
       let interestThisYear = 0;
       for (let month = 1; month <= 12; month++) {
@@ -91,7 +148,7 @@ function App() {
       });
     }
     return schedule;
-  }, [loanAmount, monthlyRate, mortgage]);
+  }, [loanAmount, monthlyRate, mortgage, loanTermYears]);
 
   // 3. Tax Calculations
   const currentYearData = amortizationSchedule[selectedYear - 1] || {
@@ -242,275 +299,144 @@ function App() {
     : brotherRentIncome - brotherRent - brotherExpenses + appliedTaxShield;
 
   return (
-    <div className="container">
-      <header className="header">
-        <h1>
-          <Home className="icon" /> SF Condo Financial Model
-        </h1>
-        <p>1111 Bay Street, Unit 307</p>
-      </header>
-
-      {/* GLOBAL CONTROL PANEL */}
-      <div
-        className="card"
-        style={{
-          position: "sticky",
-          top: "20px",
-          zIndex: 100,
-          marginBottom: "24px",
-          padding: "16px 24px",
-          display: "flex",
-          flexDirection: "column",
-          gap: "16px",
-          background: "rgba(30, 41, 59, 0.98)",
-          backdropFilter: "blur(10px)",
-          border: "1px solid rgba(96, 165, 250, 0.5)",
-          boxShadow: "0 10px 25px rgba(0,0,0,0.5)",
-        }}
-      >
-        {/* Top Row: Year Slider & Toggles */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            paddingBottom: "16px",
-            borderBottom: "1px solid rgba(255,255,255,0.1)",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "12px",
-              flex: 1,
-            }}
+    <div className="app-layout">
+      {/* ─── SIDEBAR ─── */}
+      <nav className="sidebar">
+        <div className="sidebar-logo">
+          <Home size={22} />
+        </div>
+        {TAB_CONFIG.map(({ id, icon: Icon, label }) => (
+          <button
+            key={id}
+            className={`sidebar-btn ${activeTab === id ? "active" : ""}`}
+            onClick={() => setActiveTab(id)}
+            title={label}
           >
-            <Clock color="#60a5fa" size={28} />
-            <div style={{ flex: 1, maxWidth: "400px" }}>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  marginBottom: "8px",
-                }}
-              >
-                <span style={{ fontWeight: "bold", color: "#f8fafc" }}>
-                  Projection Year Showdown
-                </span>
-              </div>
-              <EditableSlider
-                label=""
-                value={selectedYear}
-                setValue={setSelectedYear}
-                min={1}
-                max={30}
-                step={1}
-                format="years"
-                className="slider blue-slider"
-              />
-            </div>
+            <Icon size={20} />
+            <span className="sidebar-label">{label}</span>
+          </button>
+        ))}
+      </nav>
+
+      {/* ─── TOP BAR ─── */}
+      <header className="topbar">
+        <div className="topbar-left" style={{ gap: "16px" }}>
+          <h1 className="topbar-title">SF Condo Financial Model</h1>
+          
+          <div style={{ display: "flex", gap: "8px", marginLeft: "12px" }}>
+            <ContextualSlider icon={Home} label="Price" value={purchasePrice} setValue={setPurchasePrice} min={900000} max={1500000} step={10000} format="currency" />
+            
+            {activeTab === "cashflow" && (
+              <>
+                <ContextualSlider icon={Building} label="HOA" value={baseHOA} setValue={setBaseHOA} min={500} max={2500} step={10} format="currency/mo" />
+                {isRental ? (
+                  <>
+                    <ContextualSlider icon={Users} label="Tenant Rent" value={tenantRent} setValue={setTenantRent} min={5500} max={9000} step={100} format="currency/mo" />
+                    <ContextualSlider icon={Wrench} label="OpEx" value={operatingExpenseRate} setValue={setOperatingExpenseRate} min={0} max={5} step={0.1} format="percentage" />
+                  </>
+                ) : (
+                  <>
+                    <ContextualSlider icon={User} label="You" value={userRent} setValue={setUserRent} min={2500} max={4000} step={50} format="currency/mo" />
+                    <ContextualSlider icon={User} label="Brother" value={brotherRent} setValue={setBrotherRent} min={2500} max={4000} step={50} format="currency/mo" />
+                  </>
+                )}
+              </>
+            )}
+            
+            {activeTab === "loan" && (
+              <>
+                <ContextualSlider icon={PiggyBank} label="Down" value={downPaymentPercent} setValue={setDownPaymentPercent} min={0} max={100} step={1} format="percentage" />
+                <ContextualSlider icon={Percent} label="Rate" value={interestRate} setValue={setInterestRate} min={4.0} max={8.0} step={0.125} format="percentage" />
+                <ContextualSlider icon={CalendarDays} label="Term" value={loanTermYears} setValue={setLoanTermYears} min={15} max={30} step={15} format="years" />
+              </>
+            )}
+            
+            {activeTab === "taxes" && (
+              <ContextualSlider icon={Landmark} label="Tax Rate" value={propertyTaxRate} setValue={setPropertyTaxRate} min={0.5} max={2.0} step={0.01} format="percentage" />
+            )}
+            
+            {activeTab === "longterm" && (
+              <>
+                <ContextualSlider icon={TrendingUp} label="Appreciation" value={appreciation} setValue={setAppreciation} min={0} max={10} step={0.5} format="percentage" />
+                {!isRental && (
+                  <ContextualSlider icon={Clock} label="Move Out" value={moveOutYear} setValue={setMoveOutYear} min={2} max={10} step={1} format="years" />
+                )}
+                <ContextualSlider icon={Activity} label="HOA Infl." value={hoaInflation} setValue={setHoaInflation} min={1} max={10} step={0.5} format="percentage" />
+              </>
+            )}
+            
+            {activeTab === "opportunity" && (
+              <>
+                <ContextualSlider icon={TrendingUp} label="Appreciation" value={appreciation} setValue={setAppreciation} min={0} max={10} step={0.5} format="percentage" />
+                <ContextualSlider icon={TrendingUp} label="Rent Infl." value={rentInflation} setValue={setRentInflation} min={0} max={10} step={0.5} format="percentage" />
+              </>
+            )}
           </div>
-          <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
-            <label
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-                cursor: "pointer",
-                color: "#94a3b8",
-                fontSize: "0.9rem",
+        </div>
+        <div className="topbar-right">
+          <div className="topbar-badges">
+            <div className="year-badge-container">
+              <div className="year-text">
+                <Clock size={13} />
+                Year {selectedYear}
+              </div>
+              <div className="year-slider-inline">
+                <input
+                  type="range"
+                  min={1}
+                  max={30}
+                  step={1}
+                  value={selectedYear}
+                  onChange={(e) => setSelectedYear(Number(e.target.value))}
+                  className="slider blue-slider"
+                  style={{ width: "140px", margin: 0, flexShrink: 0 }}
+                />
+              </div>
+            </div>
+            <label 
+              className="topbar-badge" 
+              style={{ 
+                cursor: "pointer", 
+                display: "flex", 
+                alignItems: "center", 
+                gap: "6px",
+                background: includeTaxSavings ? "rgba(52, 211, 153, 0.1)" : "rgba(255, 255, 255, 0.05)",
+                borderColor: includeTaxSavings ? "rgba(52, 211, 153, 0.3)" : "rgba(255, 255, 255, 0.08)",
+                color: includeTaxSavings ? "var(--positive)" : "var(--text-secondary)"
               }}
             >
-              <input
-                type="checkbox"
-                checked={includeTaxSavings}
-                onChange={(e) => setIncludeTaxSavings(e.target.checked)}
-                style={{
-                  accentColor: "#4ade80",
-                  width: "16px",
-                  height: "16px",
-                }}
+              <input 
+                type="checkbox" 
+                checked={includeTaxSavings} 
+                onChange={(e) => setIncludeTaxSavings(e.target.checked)} 
+                style={{ margin: 0, cursor: "pointer" }} 
               />
               Tax Savings
             </label>
-            <div
-              style={{
-                display: "flex",
-                gap: "4px",
-                background: "rgba(0,0,0,0.3)",
-                padding: "3px",
-                borderRadius: "8px",
-              }}
+            <span 
+              className={`topbar-badge ${isRental ? "badge-purple" : "badge-blue"}`}
+              style={{ cursor: "pointer" }}
+              onClick={() => setIsRental(!isRental)}
+              title="Click to toggle between Owner and Rental mode"
             >
-              <button
-                onClick={() => setIsRental(false)}
-                style={{
-                  padding: "5px 12px",
-                  borderRadius: "6px",
-                  border: "none",
-                  fontSize: "0.85rem",
-                  background: !isRental ? "#60a5fa" : "transparent",
-                  color: !isRental ? "#fff" : "#94a3b8",
-                  cursor: "pointer",
-                  fontWeight: "bold",
-                  transition: "all 0.2s",
-                }}
-              >
-                Owner Occupied
-              </button>
-              <button
-                onClick={() => setIsRental(true)}
-                style={{
-                  padding: "5px 12px",
-                  borderRadius: "6px",
-                  border: "none",
-                  fontSize: "0.85rem",
-                  background: isRental ? "#a855f7" : "transparent",
-                  color: isRental ? "#fff" : "#94a3b8",
-                  cursor: "pointer",
-                  fontWeight: "bold",
-                  transition: "all 0.2s",
-                }}
-              >
-                Rental Property
-              </button>
-            </div>
+              {isRental ? "Rental" : "Owner"}
+            </span>
+            <span className={`topbar-badge ${userNet >= 0 ? "badge-green" : "badge-red"}`}>
+              Net: {formatCurrency(userNet)}/mo
+            </span>
           </div>
         </div>
+      </header>
 
-        {/* Bottom Row: Global Sliders */}
-        <div style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
-          <EditableSlider
-            label="Purchase Price"
-            value={purchasePrice}
-            setValue={setPurchasePrice}
-            min={100000}
-            max={1500000}
-            step={10000}
-            format="currency"
-          />
-          <EditableSlider
-            label="Interest Rate"
-            value={interestRate}
-            setValue={setInterestRate}
-            min={0.0}
-            max={10.0}
-            step={0.125}
-            format="percentage"
-          />
-          <EditableSlider
-            label="HOA Inflation"
-            value={hoaInflation}
-            setValue={setHoaInflation}
-            min={2}
-            max={10}
-            step={0.5}
-            format="percentage"
-            className="slider purple-slider"
-          />
-          <EditableSlider
-            label="Appreciation"
-            value={appreciation}
-            setValue={setAppreciation}
-            min={-5}
-            max={15}
-            step={0.5}
-            format="percentage"
-            className="slider blue-slider"
-          />
-          {isRental && (
-            <EditableSlider
-              label="OpEx (% of Value/Yr)"
-              value={operatingExpenseRate}
-              setValue={setOperatingExpenseRate}
-              min={0.1}
-              max={3.0}
-              step={0.05}
-              format="percentage"
-              className="slider red-slider"
-            />
-          )}
-          <EditableSlider
-            label="Move-Out Year"
-            value={moveOutYear}
-            setValue={setMoveOutYear}
-            min={2}
-            max={10}
-            step={1}
-            format="years"
-          />
-          {isRental ? (
-            <EditableSlider
-              label="Tenant Rent (Monthly)"
-              value={tenantRent}
-              setValue={setTenantRent}
-              min={0}
-              max={15000}
-              step={100}
-              format="currency/mo"
-            />
-          ) : (
-            <>
-              <EditableSlider
-                label="Your Rent"
-                value={userRent}
-                setValue={setUserRent}
-                min={0}
-                max={10000}
-                step={100}
-                format="currency/mo"
-                className="slider blue-slider"
-              />
-              <EditableSlider
-                label="Brother's Rent"
-                value={brotherRent}
-                setValue={setBrotherRent}
-                min={0}
-                max={10000}
-                step={100}
-                format="currency/mo"
-                className="slider purple-slider"
-              />
-            </>
-          )}
-        </div>
-      </div>
-
-      <div className="nav-tabs">
-        <button
-          className={`nav-btn ${activeTab === "cashflow" ? "active" : ""}`}
-          onClick={() => setActiveTab("cashflow")}
-        >
-          <DollarSign size={18} /> Cash Flow & Rent
-        </button>
-        <button
-          className={`nav-btn ${activeTab === "loan" ? "active" : ""}`}
-          onClick={() => setActiveTab("loan")}
-        >
-          <Building size={18} /> Property & Loan Math
-        </button>
-        <button
-          className={`nav-btn ${activeTab === "taxes" ? "active" : ""}`}
-          onClick={() => setActiveTab("taxes")}
-        >
-          <Calculator size={18} /> Tax Savings Explained
-        </button>
-        <button
-          className={`nav-btn ${activeTab === "longterm" ? "active" : ""}`}
-          onClick={() => setActiveTab("longterm")}
-        >
-          <TrendingUp size={18} /> Long-Term ROI
-        </button>
-        <button
-          className={`nav-btn ${activeTab === "oppcost" ? "active" : ""}`}
-          onClick={() => setActiveTab("oppcost")}
-        >
-          <Scale size={18} /> Buy vs Rent
-        </button>
-      </div>
-
+      {/* ─── MAIN CONTENT ─── */}
       <main className="main-content">
+        <h2 className="tab-page-title">
+          {activeTab === "cashflow" && "Monthly Cash Flow"}
+          {activeTab === "loan" && "Loan Details"}
+          {activeTab === "taxes" && "Tax Implications"}
+          {activeTab === "longterm" && "Long-Term Equity"}
+          {activeTab === "opportunity" && "Opportunity Cost"}
+        </h2>
         {activeTab === "cashflow" && (
           <CashFlowTab
             isRental={isRental}
@@ -544,11 +470,14 @@ function App() {
         {activeTab === "loan" && (
           <LoanTab
             purchasePrice={purchasePrice}
+            downPaymentPercent={downPaymentPercent}
             loanAmount={loanAmount}
             mortgage={mortgage}
+            propertyTaxRate={propertyTaxRate}
             propertyTax={propertyTax}
             hoa={hoa}
             propertyCosts={propertyCosts}
+            loanTermYears={loanTermYears}
             amortizationSchedule={amortizationSchedule}
             selectedYear={selectedYear}
           />
@@ -573,7 +502,6 @@ function App() {
             incrementalDeduction={incrementalDeduction}
             annualTaxSavings={annualTaxSavings}
             userTaxShield={userTaxShieldScheduleA}
-
             // Rental LLC props passed down from App
             purchasePrice={purchasePrice}
             rentalInterest={rentalInterest}
@@ -596,6 +524,7 @@ function App() {
 
         {activeTab === "longterm" && (
           <LongTermTab
+            isRental={isRental}
             purchasePrice={purchasePrice}
             loanAmount={loanAmount}
             amortizationSchedule={amortizationSchedule}
@@ -607,7 +536,7 @@ function App() {
           />
         )}
 
-        {activeTab === "oppcost" && (
+        {activeTab === "opportunity" && (
           <OpportunityCostTab
             purchasePrice={purchasePrice}
             loanAmount={loanAmount}
@@ -623,6 +552,8 @@ function App() {
             moveOutYear={moveOutYear}
             selectedYear={selectedYear}
             amortizationSchedule={amortizationSchedule}
+            rentInflation={rentInflation}
+            setRentInflation={setRentInflation}
           />
         )}
       </main>

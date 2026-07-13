@@ -4,11 +4,14 @@ import { formatCurrency } from "./utils";
 
 function LoanTab({
   purchasePrice,
+  downPaymentPercent,
   loanAmount,
   mortgage,
+  propertyTaxRate,
   propertyTax,
   hoa,
   propertyCosts,
+  loanTermYears,
   amortizationSchedule,
   selectedYear,
 }) {
@@ -21,7 +24,7 @@ function LoanTab({
             <div className="math-step">
               <span className="math-label">1. Loan Amount:</span>
               <span className="math-value">
-                {formatCurrency(purchasePrice)} - 20% ={" "}
+                {formatCurrency(purchasePrice)} - {downPaymentPercent}% ={" "}
                 {formatCurrency(loanAmount)}
               </span>
             </div>
@@ -33,7 +36,7 @@ function LoanTab({
             </div>
             <hr />
             <div className="math-step">
-              <span className="math-label">Property Tax (1.18% / 12):</span>
+              <span className="math-label">Property Tax ({propertyTaxRate}% / 12):</span>
               <span className="math-value">{formatCurrency(propertyTax)}</span>
             </div>
             <div className="math-step">
@@ -50,7 +53,7 @@ function LoanTab({
         </div>
         <div className="card amortization-card" style={{ marginTop: 0 }}>
           <h2>
-            <CalendarDays className="icon" /> 30-Year Amortization
+            <CalendarDays className="icon" /> {loanTermYears}-Year Amortization
           </h2>
           <div className="table-wrapper">
             <table className="amort-table">

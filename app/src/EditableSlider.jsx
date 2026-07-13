@@ -9,18 +9,51 @@ export function EditableSlider({
   step,
   format = "currency",
   className = "slider",
-  width = "100%",
+  compact = false,
 }) {
   const isCurrency = format.startsWith("currency");
   const isPercentage = format.startsWith("percentage");
 
+  let displayValue = value;
+  if (isCurrency) {
+    displayValue = new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      maximumFractionDigits: 0,
+    }).format(value);
+  } else if (isPercentage) {
+    displayValue = `${value}%`;
+  }
+  if (format === "currency/mo") displayValue += "/mo";
+  if (format === "years") displayValue += " yrs";
+
   return (
-    <div className="slider-group" style={{ flex: 1, minWidth: "150px" }}>
-      <label
-        style={{ fontSize: "0.8rem", marginBottom: "4px", display: "block" }}
+    <div className="slider-group">
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          marginBottom: "4px",
+          alignItems: "center",
+        }}
       >
-        {label}
-      </label>
+        {label ? (
+          <label className="slider-label" style={{ margin: 0 }}>
+            {label}
+          </label>
+        ) : (
+          <div></div>
+        )}
+        <span
+          style={{
+            fontSize: "0.85rem",
+            color: "#e2e8f0",
+            fontWeight: "bold",
+          }}
+        >
+          {displayValue}
+        </span>
+      </div>
       <input
         type="range"
         min={min}
@@ -29,45 +62,7 @@ export function EditableSlider({
         value={value}
         onChange={(e) => setValue(Number(e.target.value))}
         className={className}
-        style={{ width: "100%" }}
       />
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "4px",
-          marginTop: "4px",
-        }}
-      >
-        {isCurrency && (
-          <span style={{ fontSize: "0.9rem", color: "#94a3b8" }}>$</span>
-        )}
-        <input
-          type="number"
-          value={value}
-          onChange={(e) => setValue(Number(e.target.value))}
-          style={{
-            background: "rgba(0,0,0,0.2)",
-            border: "1px solid rgba(255,255,255,0.1)",
-            color: "#f8fafc",
-            padding: "4px 8px",
-            borderRadius: "4px",
-            width: width,
-            fontSize: "0.9rem",
-            fontFamily: "inherit",
-            outline: "none",
-          }}
-        />
-        {isPercentage && (
-          <span style={{ fontSize: "0.9rem", color: "#94a3b8" }}>%</span>
-        )}
-        {format === "currency/mo" && (
-          <span style={{ fontSize: "0.9rem", color: "#94a3b8" }}>/mo</span>
-        )}
-        {format === "years" && (
-          <span style={{ fontSize: "0.9rem", color: "#94a3b8" }}>yrs</span>
-        )}
-      </div>
     </div>
   );
 }

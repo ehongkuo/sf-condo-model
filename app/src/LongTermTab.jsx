@@ -3,6 +3,7 @@ import { TrendingUp, CheckCircle, XCircle, Info } from "lucide-react";
 import { formatCurrency } from "./utils";
 
 function LongTermTab({
+  isRental,
   purchasePrice,
   loanAmount,
   amortizationSchedule,
@@ -36,12 +37,16 @@ function LongTermTab({
 
       // Section 121 eligibility
       let section121Status;
-      if (year <= moveOutYear) {
-        section121Status = "living";
-      } else if (year <= moveOutYear + 3) {
-        section121Status = "eligible";
-      } else {
+      if (isRental) {
         section121Status = "expired";
+      } else {
+        if (year <= moveOutYear) {
+          section121Status = "living";
+        } else if (year <= moveOutYear + 3) {
+          section121Status = "eligible";
+        } else {
+          section121Status = "expired";
+        }
       }
 
       const capitalGain = marketValue - purchasePrice;
@@ -93,8 +98,8 @@ function LongTermTab({
 
         <p style={{ color: "#94a3b8", marginBottom: "24px" }}>
           The values below reflect the global settings in your control panel
-          (Appreciation: {appreciation}%, HOA Inflation: {hoaInflation}%,
-          Move-Out: Year {moveOutYear}).
+          (Appreciation: {appreciation}%, HOA Inflation: {hoaInflation}%
+          {!isRental && `, Move-Out: Year ${moveOutYear}`}).
         </p>
 
         <div
@@ -255,17 +260,27 @@ function LongTermTab({
           style={{ flexShrink: 0, marginTop: "2px" }}
         />
         <div>
-          <h3 style={{ color: "#60a5fa", margin: "0 0 8px 0" }}>
-            Section 121 Capital Gains Exclusion
-          </h3>
-          <p style={{ margin: 0, color: "#e2e8f0", lineHeight: 1.5 }}>
-            If you live in the home for at least 2 of the last 5 years before
-            selling, the first <strong>$250,000 of profit per person</strong>{" "}
-            ($500k combined) is tax-free. After you move out in Year{" "}
-            {moveOutYear}, the clock starts — you have until{" "}
-            <strong>Year {moveOutYear + 3}</strong> to sell and still qualify.
-            After that, you owe capital gains tax on the full profit.
-          </p>
+          <div className="card" style={{ marginBottom: "24px" }}>
+            <h2>Section 121 Tax-Free Capital Gains Expiration</h2>
+            <div style={{ marginBottom: "16px" }}>
+              <p>
+                The IRS allows up to $500,000 (for two co-owners) of capital gains
+                to be tax-free IF you lived in the home for 2 of the last 5 years
+                before selling.
+              </p>
+              {isRental ? (
+                <p style={{ color: "#f87171", marginTop: "8px" }}>
+                  <strong>Note:</strong> Because you are currently modeling the property as a <strong>Rental</strong> from Day 1, you do not meet the primary residence test. All capital gains are fully taxable.
+                </p>
+              ) : (
+                <p style={{ color: "#f87171", marginTop: "8px" }}>
+                  Once you move out to rent it to tenants in <strong>Year </strong>
+                  {moveOutYear}, the clock starts — you have until{" "}
+                  <strong>Year {moveOutYear + 3}</strong> to sell and still qualify.
+                </p>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
@@ -289,17 +304,30 @@ function LongTermTab({
               </tr>
             </thead>
             <tbody>
-              {projectionData.map((row) => {
-                const isCurrentMoveOut = row.year === moveOutYear;
-                const isDeadline = row.year === moveOutYear + 3;
-                const isExpired = row.section121Status === "expired";
+              {projectionData
+                .filter(
+                  (row) =>
+                    isRental 
+                      ? [5, 10, 15, 30].includes(row.year)
+                      : (row.year === moveOutYear ||
+                         row.year === moveOutYear + 3 ||
+                         [5, 10, 15, 30].includes(row.year))
+                )
+                .sort((a, b) => a.year - b.year)
+                .map((row, index, array) => {
+                  // Only keep unique years in case moveOutYear overlaps with 5, 10, 15, 30
+                  if (index > 0 && array[index - 1].year === row.year)
+                    return null;
+                  const isCurrentMoveOut = !isRental && row.year === moveOutYear;
+                  const isDeadline = !isRental && row.year === moveOutYear + 3;
+                  const isExpired = row.section121Status === "expired";
 
-                let rowBg = "transparent";
-                if (isCurrentMoveOut) rowBg = "rgba(251, 191, 36, 0.15)";
-                else if (isDeadline) rowBg = "rgba(248, 113, 113, 0.15)";
-                else if (row.section121Status === "eligible")
-                  rowBg = "rgba(74, 222, 128, 0.08)";
-                else if (isExpired) rowBg = "rgba(248, 113, 113, 0.05)";
+                  let rowBg = "transparent";
+                  if (isCurrentMoveOut) rowBg = "rgba(251, 191, 36, 0.15)";
+                  else if (isDeadline) rowBg = "rgba(248, 113, 113, 0.15)";
+                  else if (row.section121Status === "eligible")
+                    rowBg = "rgba(74, 222, 128, 0.08)";
+                  else if (isExpired) rowBg = "rgba(248, 113, 113, 0.05)";
 
                 return (
                   <tr key={row.year} style={{ background: rowBg }}>
