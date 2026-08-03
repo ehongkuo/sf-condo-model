@@ -1,7 +1,6 @@
-import React, { useState, useMemo } from "react";
+import React, { useMemo } from "react";
 import MathTooltip from "./MathTooltip";
 import { formatCurrency } from "./utils";
-import { EditableSlider } from "./EditableSlider";
 
 function OpportunityCostTab({
   purchasePrice,
@@ -20,12 +19,15 @@ function OpportunityCostTab({
   amortizationSchedule,
   rentInflation,
   setRentInflation,
+  takeHome,
+  setTakeHome,
+  nonHousingExpenses,
+  setNonHousingExpenses,
+  stockMarketReturn,
+  setStockMarketReturn,
+  equivalentRent,
+  setEquivalentRent,
 }) {
-  // ── Local Controls ──
-  const [takeHome, setTakeHome] = useState(6000);
-  const [nonHousingExpenses, setNonHousingExpenses] = useState(2000);
-  const [stockMarketReturn, setStockMarketReturn] = useState(7.0);
-  const [equivalentRent, setEquivalentRent] = useState(3300);
 
   // ── Constants ──
   const STARTING_CASH = 100000;
@@ -345,73 +347,6 @@ function OpportunityCostTab({
 
   return (
     <div className="tab-fade-in">
-      {/* ── Controls ── */}
-      <div className="card controls-card" style={{ paddingBottom: "16px" }}>
-        <h2>⚖️ Buy vs. Rent</h2>
-        <p className="subtitle">
-          Starting with{" "}
-          <strong>{formatCurrency(data.STARTING_CASH)}</strong> liquid cash.
-          Take-home is after taxes, 401k, mega backdoor, Roth IRA, & HSA.
-        </p>
-
-        <div
-          className="sliders-wrapper"
-          style={{
-            flexDirection: "row",
-            flexWrap: "wrap",
-            justifyContent: "center",
-            marginTop: "24px",
-            gap: "20px",
-          }}
-        >
-          <EditableSlider
-            label="Take-Home Pay"
-            value={takeHome}
-            setValue={setTakeHome}
-            min={2000}
-            max={15000}
-            step={100}
-            format="currency/mo"
-          />
-          <EditableSlider
-            label="Non-Housing Expenses"
-            value={nonHousingExpenses}
-            setValue={setNonHousingExpenses}
-            min={500}
-            max={8000}
-            step={100}
-            format="currency/mo"
-          />
-          <EditableSlider
-            label="S&P 500 Return"
-            value={stockMarketReturn}
-            setValue={setStockMarketReturn}
-            min={0}
-            max={15}
-            step={0.5}
-            format="percentage"
-          />
-          <EditableSlider
-            label="Equivalent Rent"
-            value={equivalentRent}
-            setValue={setEquivalentRent}
-            min={500}
-            max={5000}
-            step={50}
-            format="currency/mo"
-          />
-          <EditableSlider
-            label="Rent Inflation"
-            value={rentInflation}
-            setValue={setRentInflation}
-            min={0}
-            max={10}
-            step={0.5}
-            format="percentage"
-          />
-        </div>
-      </div>
-
       {/* ── Shared Budget Banner ── */}
       <div className="opp-budget-banner">
         <div className="opp-budget-flow">

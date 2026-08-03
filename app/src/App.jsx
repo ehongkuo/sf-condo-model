@@ -15,9 +15,7 @@ import {
   Wrench,
   Percent,
   Activity,
-  PiggyBank,
   Landmark,
-  CalendarDays
 } from "lucide-react";
 import { EditableSlider } from "./EditableSlider";
 import CashFlowTab from "./CashFlowTab";
@@ -143,6 +141,12 @@ function App() {
   const [downPaymentPercent, setDownPaymentPercent] = useState(20);
   const [loanTermYears, setLoanTermYears] = useState(30);
   const [propertyTaxRate, setPropertyTaxRate] = useState(1.18);
+
+  // Opportunity Cost tab state (lifted to App for top bar sliders)
+  const [takeHome, setTakeHome] = useState(6000);
+  const [nonHousingExpenses, setNonHousingExpenses] = useState(2000);
+  const [stockMarketReturn, setStockMarketReturn] = useState(7.0);
+  const [equivalentRent, setEquivalentRent] = useState(3300);
 
   const totalRent = isRental 
     ? tenantRent * Math.pow(1 + rentInflation / 100, selectedYear > 1 ? selectedYear - 1 : 0) 
@@ -382,6 +386,7 @@ function App() {
             {activeTab === "cashflow" && (
               <>
                 <ContextualSlider icon={Building} label="HOA" value={baseHOA} setValue={setBaseHOA} min={500} max={2500} step={10} format="currency/mo" />
+                <ContextualSlider icon={Clock} label="Move Out" value={moveOutYear} setValue={setMoveOutYear} min={2} max={10} step={1} format="years" />
                 {isRental ? (
                   <>
                     <ContextualSlider icon={Users} label="Tenant Rent" value={tenantRent} setValue={setTenantRent} min={5500} max={9000} step={100} format="currency/mo" />
@@ -398,14 +403,16 @@ function App() {
             
             {activeTab === "loan" && (
               <>
-                <ContextualSlider icon={PiggyBank} label="Down" value={downPaymentPercent} setValue={setDownPaymentPercent} min={0} max={100} step={1} format="percentage" />
                 <ContextualSlider icon={Percent} label="Rate" value={interestRate} setValue={setInterestRate} min={4.0} max={8.0} step={0.125} format="percentage" />
-                <ContextualSlider icon={CalendarDays} label="Term" value={loanTermYears} setValue={setLoanTermYears} min={15} max={30} step={15} format="years" />
+                <ContextualSlider icon={Activity} label="HOA Infl." value={hoaInflation} setValue={setHoaInflation} min={1} max={10} step={0.5} format="percentage" />
               </>
             )}
             
             {activeTab === "taxes" && (
-              <ContextualSlider icon={Landmark} label="Tax Rate" value={propertyTaxRate} setValue={setPropertyTaxRate} min={0.5} max={2.0} step={0.01} format="percentage" />
+              <>
+                <ContextualSlider icon={Landmark} label="Tax Rate" value={propertyTaxRate} setValue={setPropertyTaxRate} min={0.5} max={2.0} step={0.01} format="percentage" />
+                <ContextualSlider icon={Clock} label="Move Out" value={moveOutYear} setValue={setMoveOutYear} min={2} max={10} step={1} format="years" />
+              </>
             )}
             
             {activeTab === "longterm" && (
@@ -420,8 +427,12 @@ function App() {
             
             {activeTab === "opportunity" && (
               <>
-                <ContextualSlider icon={TrendingUp} label="Appreciation" value={appreciation} setValue={setAppreciation} min={0} max={10} step={0.5} format="percentage" />
+                <ContextualSlider icon={DollarSign} label="Take-Home" value={takeHome} setValue={setTakeHome} min={2000} max={15000} step={100} format="currency/mo" />
+                <ContextualSlider icon={DollarSign} label="Expenses" value={nonHousingExpenses} setValue={setNonHousingExpenses} min={500} max={8000} step={100} format="currency/mo" />
+                <ContextualSlider icon={TrendingUp} label="S&P 500" value={stockMarketReturn} setValue={setStockMarketReturn} min={0} max={15} step={0.5} format="percentage" />
+                <ContextualSlider icon={Home} label="Eq. Rent" value={equivalentRent} setValue={setEquivalentRent} min={500} max={5000} step={50} format="currency/mo" />
                 <ContextualSlider icon={TrendingUp} label="Rent Infl." value={rentInflation} setValue={setRentInflation} min={0} max={10} step={0.5} format="percentage" />
+                <ContextualSlider icon={TrendingUp} label="Apprec." value={appreciation} setValue={setAppreciation} min={0} max={10} step={0.5} format="percentage" />
               </>
             )}
           </div>
@@ -607,6 +618,14 @@ function App() {
             amortizationSchedule={amortizationSchedule}
             rentInflation={rentInflation}
             setRentInflation={setRentInflation}
+            takeHome={takeHome}
+            setTakeHome={setTakeHome}
+            nonHousingExpenses={nonHousingExpenses}
+            setNonHousingExpenses={setNonHousingExpenses}
+            stockMarketReturn={stockMarketReturn}
+            setStockMarketReturn={setStockMarketReturn}
+            equivalentRent={equivalentRent}
+            setEquivalentRent={setEquivalentRent}
           />
         )}
       </main>
