@@ -1,5 +1,5 @@
-import React, { useMemo } from "react";
-import { TrendingUp, CheckCircle, XCircle, Info } from "lucide-react";
+import React, { useState, useMemo } from "react";
+import { TrendingUp, CheckCircle, XCircle, Info, ChevronDown, ChevronUp } from "lucide-react";
 import { formatCurrency } from "./utils";
 
 function LongTermTab({
@@ -13,10 +13,16 @@ function LongTermTab({
   appreciation,
   moveOutYear,
 }) {
+  const [showFullTable, setShowFullTable] = useState(false);
+
   const projectionData = useMemo(() => {
     const rows = [];
     let currentHOAAnnual = baseHOA * 12;
     let currentPropertyTax = basePropertyTaxAnnual;
+    const baseHOAAnnual = baseHOA * 12;
+
+    let cumulativeHOAPaid = 0;
+    let cumulativeBaseHOA = 0;
 
     for (let year = 1; year <= 30; year++) {
       const marketValue =
@@ -34,6 +40,14 @@ function LongTermTab({
       if (year > 1) {
         currentPropertyTax = currentPropertyTax * 1.02;
       }
+
+      // Cumulative HOA tracking
+      cumulativeHOAPaid += currentHOAAnnual;
+      cumulativeBaseHOA += baseHOAAnnual;
+      const cumulativeHOAIncrease = cumulativeHOAPaid - cumulativeBaseHOA;
+
+      // Appreciation gain
+      const appreciationGain = marketValue - purchasePrice;
 
       // Section 121 eligibility
       let section121Status;
@@ -57,6 +71,9 @@ function LongTermTab({
           ? Math.max(0, capitalGain)
           : Math.max(0, capitalGain - totalExclusion);
 
+      // Net position: appreciation gain minus the extra HOA you paid due to inflation
+      const netPosition = appreciationGain - cumulativeHOAIncrease;
+
       rows.push({
         year,
         marketValue,
@@ -68,6 +85,10 @@ function LongTermTab({
         section121Status,
         capitalGain,
         taxableGain,
+        cumulativeHOAPaid,
+        cumulativeHOAIncrease,
+        appreciationGain,
+        netPosition,
       });
     }
     return rows;
@@ -87,6 +108,17 @@ function LongTermTab({
   const year10 = projectionData[9];
   const year15 = projectionData[14];
   const year30 = projectionData[29];
+
+  // Determine which rows to show
+  const summaryYears = new Set([5, 10, 15, 30]);
+  if (!isRental) {
+    summaryYears.add(moveOutYear);
+    summaryYears.add(moveOutYear + 3);
+  }
+
+  const displayRows = showFullTable
+    ? projectionData
+    : projectionData.filter((row) => summaryYears.has(row.year));
 
   return (
     <div className="tab-fade-in">
@@ -286,9 +318,31 @@ function LongTermTab({
 
       {/* Projection Table */}
       <div className="card" style={{ marginBottom: "24px" }}>
-        <h2>
-          <TrendingUp className="icon" /> 30-Year Projection
-        </h2>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+          <h2 style={{ margin: 0 }}>
+            <TrendingUp className="icon" /> 30-Year Projection
+          </h2>
+          <button
+            onClick={() => setShowFullTable(!showFullTable)}
+            className="topbar-badge"
+            style={{
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "4px",
+              fontSize: "0.8rem",
+              background: showFullTable ? "rgba(96, 165, 250, 0.15)" : "rgba(255, 255, 255, 0.05)",
+              borderColor: showFullTable ? "rgba(96, 165, 250, 0.3)" : "rgba(255, 255, 255, 0.1)",
+              color: showFullTable ? "#60a5fa" : "#94a3b8",
+              border: "1px solid",
+              padding: "6px 12px",
+              borderRadius: "6px",
+            }}
+          >
+            {showFullTable ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+            {showFullTable ? "Show Key Years" : "Show All 30 Years"}
+          </button>
+        </div>
         <div className="table-wrapper">
           <table className="amort-table">
             <thead>
@@ -298,26 +352,15 @@ function LongTermTab({
                 <th>Loan Balance</th>
                 <th>Equity</th>
                 <th>Monthly HOA</th>
-                <th>Annual Prop Tax</th>
+                <th style={{ color: "#a855f7" }}>Cumul. HOA Increase</th>
+                <th style={{ color: "#60a5fa" }}>Appreciation Gain</th>
+                <th style={{ color: "#2dd4bf" }}>Net Position</th>
                 <th>Section 121</th>
-                <th>Taxable Gain if Sold</th>
+                <th>Taxable Gain</th>
               </tr>
             </thead>
             <tbody>
-              {projectionData
-                .filter(
-                  (row) =>
-                    isRental 
-                      ? [5, 10, 15, 30].includes(row.year)
-                      : (row.year === moveOutYear ||
-                         row.year === moveOutYear + 3 ||
-                         [5, 10, 15, 30].includes(row.year))
-                )
-                .sort((a, b) => a.year - b.year)
-                .map((row, index, array) => {
-                  // Only keep unique years in case moveOutYear overlaps with 5, 10, 15, 30
-                  if (index > 0 && array[index - 1].year === row.year)
-                    return null;
+              {displayRows.map((row) => {
                   const isCurrentMoveOut = !isRental && row.year === moveOutYear;
                   const isDeadline = !isRental && row.year === moveOutYear + 3;
                   const isExpired = row.section121Status === "expired";
@@ -340,10 +383,31 @@ function LongTermTab({
                     <td>{formatCurrency(row.loanBalance)}</td>
                     <td className="positive">{formatCurrency(row.equity)}</td>
                     <td>{formatCurrency(row.monthlyHOA)}</td>
-                    <td>{formatCurrency(row.annualPropertyTax)}</td>
+                    <td>
+                      <span className="negative">
+                        {row.cumulativeHOAIncrease > 0
+                          ? `-${formatCurrency(row.cumulativeHOAIncrease)}`
+                          : formatCurrency(0)}
+                      </span>
+                    </td>
+                    <td>
+                      <span className={row.appreciationGain >= 0 ? "positive" : "negative"}>
+                        {row.appreciationGain >= 0 ? "+" : ""}{formatCurrency(row.appreciationGain)}
+                      </span>
+                    </td>
+                    <td>
+                      <span
+                        style={{
+                          color: row.netPosition >= 0 ? "var(--accent-teal)" : "var(--negative)",
+                          fontWeight: 600,
+                        }}
+                      >
+                        {row.netPosition >= 0 ? "+" : ""}{formatCurrency(row.netPosition)}
+                      </span>
+                    </td>
                     <td>
                       {row.section121Status === "living" && (
-                        <span style={{ color: "#60a5fa" }}>🏠 Living Here</span>
+                        <span style={{ color: "#60a5fa" }}>🏠 Living</span>
                       )}
                       {row.section121Status === "eligible" && (
                         <span style={{ color: "#4ade80" }}>
@@ -403,6 +467,13 @@ function LongTermTab({
                 {formatCurrency(year30?.monthlyHOA || 0)}/mo
               </span>
             </div>
+            <div className="divider" style={{ margin: "8px 0" }} />
+            <div className="row">
+              <span>30yr Extra HOA Paid:</span>{" "}
+              <span className="negative">
+                {formatCurrency(year30?.cumulativeHOAIncrease || 0)}
+              </span>
+            </div>
           </div>
         </div>
         <div className="card">
@@ -424,6 +495,13 @@ function LongTermTab({
               <span>Year 30 Equity:</span>{" "}
               <span className="positive">
                 {formatCurrency(year30?.equity || 0)}
+              </span>
+            </div>
+            <div className="divider" style={{ margin: "8px 0" }} />
+            <div className="row">
+              <span>30yr Appreciation:</span>{" "}
+              <span className="positive">
+                +{formatCurrency(year30?.appreciationGain || 0)}
               </span>
             </div>
           </div>
