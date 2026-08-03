@@ -36,6 +36,10 @@ const TAB_CONFIG = [
 ];
 
 const ContextualSlider = ({ icon: Icon, label, value, setValue, min, max, step, format = "currency" }) => {
+  const [editing, setEditing] = React.useState(false);
+  const [inputValue, setInputValue] = React.useState("");
+  const inputRef = React.useRef(null);
+
   let displayValue = value;
   if (format.startsWith("currency")) {
     displayValue = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(value);
@@ -45,11 +49,60 @@ const ContextualSlider = ({ icon: Icon, label, value, setValue, min, max, step, 
   if (format === "currency/mo") displayValue += "/mo";
   if (format === "years") displayValue += " yrs";
 
+  React.useEffect(() => {
+    if (editing && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [editing]);
+
+  const handleClick = (e) => {
+    e.stopPropagation();
+    setInputValue(String(value));
+    setEditing(true);
+  };
+
+  const commit = () => {
+    const parsed = parseFloat(inputValue);
+    if (!isNaN(parsed)) {
+      setValue(Math.min(max, Math.max(min, parsed)));
+    }
+    setEditing(false);
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") commit();
+    if (e.key === "Escape") setEditing(false);
+  };
+
   return (
     <div className="year-badge-container">
       <div className="year-text">
         <Icon size={13} />
-        {label}: {displayValue}
+        {label}:{" "}
+        {editing ? (
+          <input
+            ref={inputRef}
+            type="number"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onBlur={commit}
+            onKeyDown={handleKeyDown}
+            min={min}
+            max={max}
+            step={step}
+            className="compact-input"
+            style={{ width: "56px", fontSize: "0.72rem", padding: "2px 4px", height: "20px" }}
+          />
+        ) : (
+          <span
+            onClick={handleClick}
+            style={{ cursor: "pointer", borderBottom: "1px dashed rgba(255,255,255,0.25)", paddingBottom: "1px" }}
+            title="Click to type a value"
+          >
+            {displayValue}
+          </span>
+        )}
       </div>
       <div className="year-slider-inline">
         <input
