@@ -480,12 +480,12 @@ function App() {
             </label>
             <span 
               className={`topbar-badge ${isRental ? "badge-purple" : "badge-blue"}`}
-              style={{ cursor: "default" }}
+              style={{ cursor: "default", width: "64px", display: "inline-flex", justifyContent: "center" }}
               title="Automatically toggles based on Year > Move Out Year"
             >
               {isRental ? "Rental" : "Owner"}
             </span>
-            <span className={`topbar-badge ${userNet >= 0 ? "badge-green" : "badge-red"}`}>
+            <span className={`topbar-badge ${userNet >= 0 ? "badge-green" : "badge-red"}`} style={{ width: "125px", display: "inline-flex", justifyContent: "center" }}>
               Net: {formatCurrency(userNet)}/mo
             </span>
           </div>

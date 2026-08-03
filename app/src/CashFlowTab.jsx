@@ -166,7 +166,7 @@ function CashFlowTab({
             <BreakdownRow icon={Wallet} label="Rent Income" value={`+${formatCurrency(userRentIncome)}`} color="var(--positive)" />
             
             {includeTaxSavings && (
-              <BreakdownRow icon={TrendingUp} label="Tax Savings" value={`+${formatCurrency(userTaxShield)}`} color="var(--positive)" />
+              <BreakdownRow icon={TrendingUp} label={userTaxShield >= 0 ? "Tax Savings" : "Tax Cost"} value={userTaxShield > 0 ? `+${formatCurrency(userTaxShield)}` : formatCurrency(userTaxShield)} color={userTaxShield >= 0 ? "var(--positive)" : "var(--negative)"} />
             )}
           </div>
         </div>
@@ -191,7 +191,7 @@ function CashFlowTab({
             <BreakdownRow icon={Wallet} label="Rent Income" value={`+${formatCurrency(brotherRentIncome)}`} color="var(--positive)" />
             
             {includeTaxSavings && (
-              <BreakdownRow icon={TrendingUp} label="Tax Savings" value={`+${formatCurrency(userTaxShield)}`} color="var(--positive)" />
+              <BreakdownRow icon={TrendingUp} label={userTaxShield >= 0 ? "Tax Savings" : "Tax Cost"} value={userTaxShield > 0 ? `+${formatCurrency(userTaxShield)}` : formatCurrency(userTaxShield)} color={userTaxShield >= 0 ? "var(--positive)" : "var(--negative)"} />
             )}
           </div>
         </div>
