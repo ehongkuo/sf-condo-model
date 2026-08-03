@@ -124,7 +124,6 @@ function App() {
   // Shared state
   const [userRent, setUserRent] = useState(3200);
   const [brotherRent, setBrotherRent] = useState(3000);
-  const [isRental, setIsRental] = useState(false);
   const [tenantRent, setTenantRent] = useState(6500);
   const [includeTaxSavings, setIncludeTaxSavings] = useState(true);
   const [selectedYear, setSelectedYear] = useState(1);
@@ -147,6 +146,8 @@ function App() {
   const [nonHousingExpenses, setNonHousingExpenses] = useState(2000);
   const [stockMarketReturn, setStockMarketReturn] = useState(7.0);
   const [equivalentRent, setEquivalentRent] = useState(3300);
+
+  const isRental = selectedYear > moveOutYear;
 
   const totalRent = isRental 
     ? tenantRent * Math.pow(1 + rentInflation / 100, selectedYear > 1 ? selectedYear - 1 : 0) 
@@ -479,9 +480,8 @@ function App() {
             </label>
             <span 
               className={`topbar-badge ${isRental ? "badge-purple" : "badge-blue"}`}
-              style={{ cursor: "pointer" }}
-              onClick={() => setIsRental(!isRental)}
-              title="Click to toggle between Owner and Rental mode"
+              style={{ cursor: "default" }}
+              title="Automatically toggles based on Year > Move Out Year"
             >
               {isRental ? "Rental" : "Owner"}
             </span>
