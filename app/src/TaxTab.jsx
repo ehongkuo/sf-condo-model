@@ -63,10 +63,16 @@ function TaxTab({
           </div>
           <div className="card-body">
             <p style={{ color: "#e2e8f0", marginBottom: "16px" }}>
-              Your family LLC has <strong>2 equal members ({(llcShare * 100).toFixed(0)}% each)</strong>:
-              You and your Brother. Because Dad is paying and receiving his portion
-              under the table, he is not on the title or the LLC. This means the IRS sees
-              you and your brother splitting 100% of the income and 100% of the deductions.
+              This scenario models <strong>2 equal LLC members ({(llcShare * 100).toFixed(0)}% each)</strong>:
+              you and your brother. It assigns each member half of the reported
+              rental income and deductions.
+            </p>
+            <p style={{ color: "#fbbf24", marginBottom: "16px" }}>
+              <strong>Tax assumption:</strong> The projected W-2 offset only applies
+              if the taxpayer qualifies as a real estate professional, materially
+              participates in this activity, and clears the at-risk and excess
+              business-loss limitations. Confirm the ownership and payment structure
+              with a tax professional before relying on this scenario.
             </p>
             <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
               <div
@@ -283,7 +289,7 @@ function TaxTab({
               <div className="row">
                 <span>
                   Depreciation ({formatCurrency(purchasePrice)} × 80% ÷ 27.5 ÷
-                  3):
+                  2):
                 </span>{" "}
                 <span>-{formatCurrency(userShareOfDepreciation)}</span>
               </div>
@@ -401,14 +407,13 @@ function TaxTab({
                       fontSize: "1.1rem",
                     }}
                   >
-                    ✅ LLC + REPS: This loss REDUCES your W-2 taxes!
+                    Scenario: rental loss offsets W-2 income
                   </div>
                   <p style={{ color: "#e2e8f0", margin: "0 0 16px 0" }}>
-                    Unlike a standard Schedule E rental where this loss would be{" "}
-                    <strong>suspended</strong> (wasted) because your MAGI
-                    exceeds $150k, the LLC + REPS structure makes this loss{" "}
-                    <strong>non-passive</strong>. It directly reduces the income
-                    the IRS taxes you on.
+                    This projection assumes the REPS and material-participation
+                    tests are satisfied and no other loss limitation applies. If
+                    those conditions are not met, some or all of the loss may be
+                    suspended instead of reducing W-2 income this year.
                   </p>
                   <div className="row">
                     <span>Your W-2 Income:</span> <span>$213,000</span>
@@ -572,7 +577,7 @@ function TaxTab({
                 <strong>Bottom line:</strong>{" "}
                 {netRentalIncome >= 0
                   ? `The rental generates ${formatCurrency(rentalIncome)}/yr of income. After deductions, you owe ${formatCurrency(Math.abs(rentalTaxImpact))}/yr in extra taxes. But you're still cash-flow positive from the rent.`
-                  : `The LLC shows a ${formatCurrency(Math.abs(netRentalIncome))}/yr paper loss that directly reduces your W-2 taxes by ${formatCurrency(annualTaxSavingsFromLoss)}/yr — that's ${formatCurrency(monthlyTaxSavingsFromLoss)}/mo back in your pocket.`}
+                  : `Under the selected REPS assumptions, the LLC shows a ${formatCurrency(Math.abs(netRentalIncome))}/yr paper loss and an estimated tax benefit of ${formatCurrency(annualTaxSavingsFromLoss)}/yr (${formatCurrency(monthlyTaxSavingsFromLoss)}/mo).`}
               </p>
             </div>
           </div>

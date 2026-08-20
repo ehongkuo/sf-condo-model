@@ -7,8 +7,6 @@ import {
   TrendingUp,
   Scale,
   Clock,
-  ChevronDown,
-  ChevronUp,
   Sliders,
   Users,
   User,
@@ -17,13 +15,18 @@ import {
   Activity,
   Landmark,
 } from "lucide-react";
-import { EditableSlider } from "./EditableSlider";
 import CashFlowTab from "./CashFlowTab";
 import LoanTab from "./LoanTab";
 import TaxTab from "./TaxTab";
 import LongTermTab from "./LongTermTab";
 import OpportunityCostTab from "./OpportunityCostTab";
 import { formatCurrency } from "./utils";
+import {
+  buildAmortizationSchedule,
+  calculateCumulativeRentalTaxSavings,
+  calculateMortgagePayment,
+  valueInYear,
+} from "./financialModel";
 
 const TAB_CONFIG = [
   { id: "cashflow", icon: DollarSign, label: "Cash Flow" },
@@ -90,16 +93,19 @@ const ContextualSlider = ({ icon: Icon, label, value, setValue, min, max, step, 
             max={max}
             step={step}
             className="compact-input"
+            aria-label={`${label} value`}
             style={{ width: "56px", fontSize: "0.72rem", padding: "2px 4px", height: "20px" }}
           />
         ) : (
-          <span
+          <button
+            type="button"
+            className="compact-value-button"
             onClick={handleClick}
-            style={{ cursor: "pointer", borderBottom: "1px dashed rgba(255,255,255,0.25)", paddingBottom: "1px" }}
             title="Click to type a value"
+            aria-label={`Edit ${label}, current value ${displayValue}`}
           >
             {displayValue}
-          </span>
+          </button>
         )}
       </div>
       <div className="year-slider-inline">
@@ -111,6 +117,7 @@ const ContextualSlider = ({ icon: Icon, label, value, setValue, min, max, step, 
           value={value}
           onChange={(e) => setValue(Number(e.target.value))}
           className="slider blue-slider"
+          aria-label={label}
           style={{ width: "140px", margin: 0, flexShrink: 0 }}
         />
       </div>
@@ -120,6 +127,7 @@ const ContextualSlider = ({ icon: Icon, label, value, setValue, min, max, step, 
 
 function App() {
   const [activeTab, setActiveTab] = useState("cashflow");
+  const [assumptionsOpen, setAssumptionsOpen] = useState(false);
 
   // Shared state
   const [userRent, setUserRent] = useState(3200);
@@ -137,8 +145,8 @@ function App() {
   const [rentInflation, setRentInflation] = useState(3.0);
   const [moveOutYear, setMoveOutYear] = useState(5);
   const [operatingExpenseRate, setOperatingExpenseRate] = useState(0.5);
-  const [downPaymentPercent, setDownPaymentPercent] = useState(20);
-  const [loanTermYears, setLoanTermYears] = useState(30);
+  const [downPaymentPercent] = useState(20);
+  const [loanTermYears] = useState(30);
   const [propertyTaxRate, setPropertyTaxRate] = useState(1.18);
 
   // Opportunity Cost tab state (lifted to App for top bar sliders)
@@ -149,64 +157,44 @@ function App() {
 
   const isRental = selectedYear > moveOutYear;
 
-  const totalRent = isRental 
-    ? tenantRent * Math.pow(1 + rentInflation / 100, selectedYear > 1 ? selectedYear - 1 : 0) 
+  const totalRent = isRental
+    ? valueInYear(tenantRent, rentInflation, selectedYear)
     : userRent + brotherRent;
 
   // 1. Property Calculations (Base values)
   const downPayment = purchasePrice * (downPaymentPercent / 100);
   const loanAmount = purchasePrice - downPayment;
-  const monthlyRate = interestRate / 100 / 12;
-  const numPayments = loanTermYears * 12;
-
-  const mortgage =
-    loanAmount > 0
-      ? interestRate > 0
-        ? (loanAmount *
-            (monthlyRate * Math.pow(1 + monthlyRate, numPayments))) /
-          (Math.pow(1 + monthlyRate, numPayments) - 1)
-        : loanAmount / numPayments
-      : 0;
+  const mortgage = calculateMortgagePayment(
+    loanAmount,
+    interestRate,
+    loanTermYears,
+  );
 
   // Dynamic Property Costs based on selectedYear
   const basePropertyTaxAnnual = purchasePrice * (propertyTaxRate / 100);
-  const propertyTaxAnnual =
-    basePropertyTaxAnnual *
-    Math.pow(1.02, selectedYear > 1 ? selectedYear - 1 : 0); // Prop 13 cap
+  const propertyTaxAnnual = valueInYear(
+    basePropertyTaxAnnual,
+    2,
+    selectedYear,
+  );
   const propertyTax = propertyTaxAnnual / 12;
 
 
   const currentHOAAnnual =
-    baseHOA *
-    12 *
-    Math.pow(1 + hoaInflation / 100, selectedYear > 1 ? selectedYear - 1 : 0);
+    valueInYear(baseHOA, hoaInflation, selectedYear) * 12;
   const hoa = currentHOAAnnual / 12;
 
   const propertyCosts = mortgage + propertyTax + hoa;
 
   // 2. Amortization Schedule
   const amortizationSchedule = useMemo(() => {
-    const schedule = [];
-    let balance = loanAmount;
-    for (let year = 1; year <= loanTermYears; year++) {
-      let principalThisYear = 0;
-      let interestThisYear = 0;
-      for (let month = 1; month <= 12; month++) {
-        const interestPayment = balance * monthlyRate;
-        const principalPayment = mortgage - interestPayment;
-        interestThisYear += interestPayment;
-        principalThisYear += principalPayment;
-        balance -= principalPayment;
-      }
-      schedule.push({
-        year,
-        principal: principalThisYear,
-        interest: interestThisYear,
-        balance: balance > 0 ? balance : 0,
-      });
-    }
-    return schedule;
-  }, [loanAmount, monthlyRate, mortgage, loanTermYears]);
+    return buildAmortizationSchedule(
+      loanAmount,
+      interestRate,
+      loanTermYears,
+      mortgage,
+    );
+  }, [loanAmount, interestRate, mortgage, loanTermYears]);
 
   // 3. Tax Calculations
   const currentYearData = amortizationSchedule[selectedYear - 1] || {
@@ -239,7 +227,7 @@ function App() {
 
   const totalItemized = caStateTax + deductiblePropertyTax + deductibleInterest;
   const standardDeduction = 16100;
-  const incrementalDeduction = totalItemized - standardDeduction;
+  const incrementalDeduction = Math.max(0, totalItemized - standardDeduction);
 
   const marginalRate = 0.24;
   const annualTaxSavings = incrementalDeduction * marginalRate;
@@ -269,58 +257,44 @@ function App() {
     userShareOfDepreciation +
     userShareOfOperatingExpenses;
 
-  // IRS sees brothers receiving 100% of rent (50% each) because Dad is under the table
+  // Tax ownership is modeled as two equal LLC members.
   const userShareOfRentIncomeTax = llcTaxShare; 
   const rentalIncomeTax = totalRent * 12 * userShareOfRentIncomeTax;
   const netRentalIncomeTax = rentalIncomeTax - totalRentalDeductions;
 
-  // LLC + REPS: losses are NON-PASSIVE and offset W-2 income
-  // If profit, we owe tax. If loss, we GET a tax refund (reduces W-2 taxes).
+  // This scenario assumes REPS and material participation requirements are met.
   const rentalTaxImpact = netRentalIncomeTax * marginalRate; // positive = owe, negative = savings
   const monthlyRentalTaxCost = rentalTaxImpact / 12; // positive = cost, negative = savings
 
   // Calculate cumulative tax savings from LLC losses up to selectedYear
   const cumulativeTaxSavings = useMemo(() => {
-    let cumulative = 0;
-    const startYear = moveOutYear + 1;
-    for (let i = startYear; i <= selectedYear; i++) {
-      const yearData = amortizationSchedule[i - 1] || { interest: 0 };
-      const yInterest = yearData.interest * llcTaxShare;
-
-      const yPropTaxAnnual =
-        basePropertyTaxAnnual * Math.pow(1.02, i > 1 ? i - 1 : 0);
-      const yPropTax = yPropTaxAnnual * llcTaxShare;
-
-      const yHOAAnnual =
-        baseHOA * 12 * Math.pow(1 + hoaInflation / 100, i > 1 ? i - 1 : 0);
-      const yHOA = yHOAAnnual * llcTaxShare;
-
-      const yDeductions =
-        yInterest +
-        yPropTax +
-        yHOA +
-        userShareOfDepreciation +
-        userShareOfOperatingExpenses;
-      const yIncome = totalRent * 12 * userShareOfRentIncomeTax;
-      const yNet = yIncome - yDeductions;
-
-      if (yNet < 0) {
-        cumulative += Math.abs(yNet) * marginalRate;
-      }
-    }
-    return cumulative;
+    return calculateCumulativeRentalTaxSavings({
+      throughYear: selectedYear,
+      moveOutYear,
+      amortizationSchedule,
+      basePropertyTaxAnnual,
+      baseHOAMonthly: baseHOA,
+      hoaInflationPercent: hoaInflation,
+      tenantRentMonthly: tenantRent,
+      rentInflationPercent: rentInflation,
+      annualDepreciationShare: userShareOfDepreciation,
+      annualOperatingExpenseShare: userShareOfOperatingExpenses,
+      taxShare: llcTaxShare,
+      marginalRate,
+    }).totalSavings;
   }, [
     selectedYear,
+    moveOutYear,
     amortizationSchedule,
     basePropertyTaxAnnual,
     baseHOA,
     hoaInflation,
+    tenantRent,
+    rentInflation,
     userShareOfDepreciation,
     userShareOfOperatingExpenses,
-    totalRent,
-    userShareOfRentIncomeTax,
-    moveOutYear,
     llcTaxShare,
+    marginalRate,
   ]);
 
   // The actual applied tax shield (added to net cash flow)
@@ -359,7 +333,7 @@ function App() {
   return (
     <div className="app-layout">
       {/* ─── SIDEBAR ─── */}
-      <nav className="sidebar">
+      <nav className="sidebar" aria-label="Financial model views">
         <div className="sidebar-logo">
           <Home size={22} />
         </div>
@@ -369,6 +343,7 @@ function App() {
             className={`sidebar-btn ${activeTab === id ? "active" : ""}`}
             onClick={() => setActiveTab(id)}
             title={label}
+            aria-current={activeTab === id ? "page" : undefined}
           >
             <Icon size={20} />
             <span className="sidebar-label">{label}</span>
@@ -377,16 +352,29 @@ function App() {
       </nav>
 
       {/* ─── TOP BAR ─── */}
-      <header className="topbar">
+      <header className={`topbar ${assumptionsOpen ? "assumptions-open" : ""}`}>
         <div className="topbar-left" style={{ gap: "16px" }}>
           <h1 className="topbar-title">SF Condo Financial Model</h1>
-          
-          <div style={{ display: "flex", gap: "8px", marginLeft: "12px" }}>
+
+          <button
+            type="button"
+            className="mobile-assumptions-toggle"
+            aria-expanded={assumptionsOpen}
+            aria-controls="contextual-assumptions"
+            onClick={() => setAssumptionsOpen((open) => !open)}
+          >
+            <Sliders size={16} /> Assumptions
+          </button>
+
+          <div
+            id="contextual-assumptions"
+            className="contextual-assumptions"
+          >
             <ContextualSlider icon={Home} label="Price" value={purchasePrice} setValue={setPurchasePrice} min={900000} max={1500000} step={10000} format="currency" />
             
             {activeTab === "cashflow" && (
               <>
-                <ContextualSlider icon={Building} label="HOA" value={baseHOA} setValue={setBaseHOA} min={500} max={2500} step={10} format="currency/mo" />
+                <ContextualSlider icon={Building} label="HOA" value={baseHOA} setValue={setBaseHOA} min={500} max={2500} step={1} format="currency/mo" />
                 <ContextualSlider icon={Clock} label="Move Out" value={moveOutYear} setValue={setMoveOutYear} min={2} max={10} step={1} format="years" />
                 {isRental ? (
                   <>
@@ -454,6 +442,7 @@ function App() {
                   value={selectedYear}
                   onChange={(e) => setSelectedYear(Number(e.target.value))}
                   className="slider blue-slider"
+                  aria-label="Projection year"
                   style={{ width: "140px", margin: 0, flexShrink: 0 }}
                 />
               </div>
@@ -493,7 +482,7 @@ function App() {
       </header>
 
       {/* ─── MAIN CONTENT ─── */}
-      <main className="main-content">
+      <main className="main-content" id="main-content">
         <h2 className="tab-page-title">
           {activeTab === "cashflow" && "Monthly Cash Flow"}
           {activeTab === "loan" && "Loan Details"}
@@ -527,7 +516,6 @@ function App() {
             propertyTax={propertyTax}
             hoa={hoa}
             totalOperatingExpenses={totalOperatingExpenses}
-            selectedYear={selectedYear}
           />
         )}
 
@@ -590,7 +578,6 @@ function App() {
           <LongTermTab
             isRental={isRental}
             purchasePrice={purchasePrice}
-            loanAmount={loanAmount}
             amortizationSchedule={amortizationSchedule}
             baseHOA={baseHOA}
             basePropertyTaxAnnual={basePropertyTaxAnnual}
@@ -617,15 +604,10 @@ function App() {
             selectedYear={selectedYear}
             amortizationSchedule={amortizationSchedule}
             rentInflation={rentInflation}
-            setRentInflation={setRentInflation}
             takeHome={takeHome}
-            setTakeHome={setTakeHome}
             nonHousingExpenses={nonHousingExpenses}
-            setNonHousingExpenses={setNonHousingExpenses}
             stockMarketReturn={stockMarketReturn}
-            setStockMarketReturn={setStockMarketReturn}
             equivalentRent={equivalentRent}
-            setEquivalentRent={setEquivalentRent}
           />
         )}
       </main>

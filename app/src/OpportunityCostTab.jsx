@@ -1,6 +1,7 @@
 import React, { useMemo } from "react";
 import MathTooltip from "./MathTooltip";
 import { formatCurrency } from "./utils";
+import { calculateNetWorthComparison, valueInYear } from "./financialModel";
 
 function OpportunityCostTab({
   purchasePrice,
@@ -18,15 +19,10 @@ function OpportunityCostTab({
   selectedYear,
   amortizationSchedule,
   rentInflation,
-  setRentInflation,
   takeHome,
-  setTakeHome,
   nonHousingExpenses,
-  setNonHousingExpenses,
   stockMarketReturn,
-  setStockMarketReturn,
   equivalentRent,
-  setEquivalentRent,
 }) {
 
   // ── Constants ──
@@ -88,10 +84,12 @@ function OpportunityCostTab({
       const currentYear = yearIndex + 1;
       const isRental = currentYear > moveOutYear;
 
-      const currentHOA =
-        baseHOA * Math.pow(1 + hoaInflation / 100, yearIndex);
-      const currentTaxAnnual =
-        basePropertyTaxAnnual * Math.pow(1.02, yearIndex);
+      const currentHOA = valueInYear(baseHOA, hoaInflation, currentYear);
+      const currentTaxAnnual = valueInYear(
+        basePropertyTaxAnnual,
+        2,
+        currentYear,
+      );
       const currentTaxMonthly = currentTaxAnnual / 12;
 
       const yearData = amortizationSchedule[yearIndex] || {
@@ -146,8 +144,11 @@ function OpportunityCostTab({
           monthRentIncome -
           monthTaxShield;
       } else {
-        const inflatedTenantRent =
-          tenantRent * Math.pow(1 + rentInflation / 100, yearIndex);
+        const inflatedTenantRent = valueInYear(
+          tenantRent,
+          rentInflation,
+          currentYear,
+        );
         monthTenantRent = inflatedTenantRent;
         const currentOpExAnnual =
           purchasePrice * (operatingExpenseRate / 100);
@@ -189,7 +190,7 @@ function OpportunityCostTab({
 
       const rentHousingCost = isRental
         ? 0
-        : equivalentRent * Math.pow(1 + rentInflation / 100, yearIndex);
+        : valueInYear(equivalentRent, rentInflation, currentYear);
 
       const buySurplus = availableForHousing - buyHousingCost;
       const rentSurplus = availableForHousing - rentHousingCost;
@@ -236,11 +237,16 @@ function OpportunityCostTab({
     const userNetProceeds =
       (grossEquityTotal - sellerClosingCostsTotal) * userEquityShare;
 
-    const buyLiquidNetWorth = buyBrokerage + userNetProceeds;
-    const rentNetWorth = rentBrokerage;
-
-    const pathAWins = buyLiquidNetWorth > rentNetWorth;
-    const delta = Math.abs(buyLiquidNetWorth - rentNetWorth);
+    const {
+      buyLiquidNetWorth,
+      rentNetWorth,
+      pathAWins,
+      delta,
+    } = calculateNetWorthComparison({
+      buyBrokerage,
+      userNetProceeds,
+      rentBrokerage,
+    });
 
     const buyCumulativeReturns =
       buyBrokerage -
@@ -306,6 +312,8 @@ function OpportunityCostTab({
     amortizationSchedule,
     takeHome,
     nonHousingExpenses,
+    downPaymentTotal,
+    annualDepreciation,
   ]);
 
   // ── Reusable line item ──
