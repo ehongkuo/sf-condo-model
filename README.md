@@ -1,6 +1,6 @@
 # SF Condo Financial Model 🏢
 
-Welcome to the financial model for **1111 Bay Street, Unit 307**. 
+Welcome to the financial model for SF condo purchases
 
 This interactive React application was built to simulate the complex financial breakdown of a 50/50 family co-investment in San Francisco real estate. It helps clarify exactly how the cash flow, tax deductions, and property math shake out.
 
