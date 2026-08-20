@@ -5,7 +5,6 @@ import { formatCurrency } from "./utils";
 function LongTermTab({
   isRental,
   purchasePrice,
-  loanAmount,
   amortizationSchedule,
   baseHOA,
   basePropertyTaxAnnual,
@@ -94,13 +93,13 @@ function LongTermTab({
     return rows;
   }, [
     purchasePrice,
-    loanAmount,
     amortizationSchedule,
     baseHOA,
     basePropertyTaxAnnual,
     hoaInflation,
     appreciation,
     moveOutYear,
+    isRental,
   ]);
 
   // Quick-access rows for the summary cards

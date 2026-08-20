@@ -1,5 +1,5 @@
 import React from "react";
-import { Info, Home, Building, Receipt, Wallet, TrendingUp, PiggyBank, CircleDollarSign } from "lucide-react";
+import { Info, Home, Receipt, Wallet, TrendingUp } from "lucide-react";
 import { formatCurrency } from "./utils";
 
 function CashFlowTab({
@@ -23,7 +23,6 @@ function CashFlowTab({
   propertyTax,
   hoa,
   totalOperatingExpenses,
-  selectedYear,
 }) {
   const dadShare = 0.5;
   const userShare = 0.25;

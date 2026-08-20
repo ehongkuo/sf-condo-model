@@ -9,7 +9,6 @@ export function EditableSlider({
   step,
   format = "currency",
   className = "slider",
-  compact = false,
 }) {
   const [editing, setEditing] = useState(false);
   const [inputValue, setInputValue] = useState("");
